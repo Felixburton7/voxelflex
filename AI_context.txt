@@ -1,0 +1,2935 @@
+Working Directory: /home/s_felix/voxelflex
+
+Full File Structure of Project:
+.
+├── AI_context.sh
+├── AI_context.txt
+├── main.py
+├── outputs
+│   ├── logs
+│   │   └── voxelflex.log
+│   ├── metrics
+│   ├── models
+│   └── visualizations
+├── README.md
+├── requirements.txt
+├── setup.py
+└── src
+    ├── voxelflex
+    │   ├── cli
+    │   │   ├── cli.py
+    │   │   ├── commands
+    │   │   │   ├── evaluate.py
+    │   │   │   ├── __init__.py
+    │   │   │   ├── predict.py
+    │   │   │   ├── __pycache__
+    │   │   │   │   ├── evaluate.cpython-39.pyc
+    │   │   │   │   ├── __init__.cpython-39.pyc
+    │   │   │   │   ├── predict.cpython-39.pyc
+    │   │   │   │   ├── train.cpython-39.pyc
+    │   │   │   │   └── visualize.cpython-39.pyc
+    │   │   │   ├── train.py
+    │   │   │   └── visualize.py
+    │   │   ├── __init__.py
+    │   │   └── __pycache__
+    │   │       ├── cli.cpython-39.pyc
+    │   │       └── __init__.cpython-39.pyc
+    │   ├── config
+    │   │   ├── config.py
+    │   │   ├── default_config.yaml
+    │   │   ├── __init__.py
+    │   │   └── __pycache__
+    │   │       ├── config.cpython-39.pyc
+    │   │       └── __init__.cpython-39.pyc
+    │   ├── data
+    │   │   ├── data_loader.py
+    │   │   ├── __init__.py
+    │   │   ├── __pycache__
+    │   │   │   ├── data_loader.cpython-39.pyc
+    │   │   │   ├── __init__.cpython-39.pyc
+    │   │   │   └── validators.cpython-39.pyc
+    │   │   └── validators.py
+    │   ├── __init__.py
+    │   ├── main.py
+    │   ├── models
+    │   │   ├── cnn_models.py
+    │   │   ├── __init__.py
+    │   │   └── __pycache__
+    │   │       ├── cnn_models.cpython-39.pyc
+    │   │       └── __init__.cpython-39.pyc
+    │   ├── __pycache__
+    │   │   └── __init__.cpython-39.pyc
+    │   ├── utils
+    │   │   ├── file_utils.py
+    │   │   ├── __init__.py
+    │   │   ├── logging_utils.py
+    │   │   ├── __pycache__
+    │   │   │   ├── file_utils.cpython-39.pyc
+    │   │   │   ├── __init__.cpython-39.pyc
+    │   │   │   ├── logging_utils.cpython-39.pyc
+    │   │   │   └── system_utils.cpython-39.pyc
+    │   │   ├── system_utils.py
+    │   │   └── voxel_utils.py
+    │   └── visualization
+    │       ├── __init__.py
+    │       └── visualization.py
+    └── voxelflex.egg-info
+        ├── dependency_links.txt
+        ├── entry_points.txt
+        ├── PKG-INFO
+        ├── requires.txt
+        ├── SOURCES.txt
+        └── top_level.txt
+
+22 directories, 56 files
+
+---------------------------------------------------------
+Contents of Relevant Files (Ignoring Binary Files):
+---------------------------------------------------------
+===== FILE: src/voxelflex/config/default_config.yaml =====
+# Default configuration for Voxelflex
+# Default configuration for Voxelflex
+input:
+  data_dir: /home/s_felix/drFelix/data_full                     # Base directory for all data files
+  voxel_file: /home/s_felix/drFelix/data_full/processed/voxelized_output/mdcath_dataset_half_CNOCACB.hdf5   # Full path to the voxel data
+  rmsf_dir: /home/s_felix/drFelix/data_full/processed/RMSF/replicas  # Full path to RMSF data directory
+  temperature: 320                          # Temperature identifier: 320, 348, 379, 413, 450, or "average"
+  domain_ids: [1a02F00]                            # List of domain IDs to process
+  use_metadata: true                        # Flag to include metadata in processing                     # Flag to include metadata in processing
+
+output:
+  base_dir: outputs/                        # Base output directory
+  log_file: voxelflex.log                   # Filename for logging output
+
+model:
+  architecture: dilated_resnet3d            # Choose from: voxelflex_cnn, dilated_resnet3d, multipath_rmsf_net
+  input_channels: 5                         # Number of channels: 5 (C, N, O, CA, CB) or 4 if CA/CB are missing
+  channel_growth_rate: 1.5                  # Growth rate for channels in the model
+  num_residual_blocks: 4                    # Number of residual blocks in the CNN
+  dropout_rate: 0.3                         # Dropout rate for regularization
+  base_filters: 32                          # Base number of filters for convolutional layers
+
+training:
+  batch_size: 32                            # Training batch size
+  num_epochs: 100                           # Number of training epochs
+  learning_rate: 0.001                      # Learning rate for optimizer
+  weight_decay: 1e-5                        # Weight decay for regularization
+  train_split: 0.7                          # Proportion of data for training
+  val_split: 0.15                           # Proportion of data for validation
+  test_split: 0.15                          # Proportion of data for testing
+  seed: 42                                  # Random seed for reproducibility
+  scheduler:                                # Learning rate scheduler configuration
+    type: reduce_on_plateau                 # Scheduler type: reduce_on_plateau or step
+    patience: 10                            # Patience for ReduceLROnPlateau
+    factor: 0.1                             # Factor for scheduler
+    mode: min                               # Mode for ReduceLROnPlateau: min or max
+
+logging:
+  level: INFO                               # Overall logging level
+  console_level: INFO                       # Logging level for console output
+  file_level: DEBUG                         # Logging level for file output
+  show_progress_bars: true                  # Display progress bars during processing
+
+visualization:
+  plot_loss: true                           # Plot training loss over epochs
+  plot_predictions: true                    # Plot predicted vs. actual RMSF values
+  plot_residue_type_analysis: true          # Analyze prediction errors across residue types
+  plot_error_distribution: true             # Visualize overall error distribution
+  plot_amino_acid_performance: true         # Generate histogram of prediction errors across amino acids
+  save_format: png                          # Format for saving visualizations
+  dpi: 300                                  # DPI for saved figures
+  plot_correlation: true                    # Plot correlation between predictions and ground truth
+  max_scatter_points: 1000                  # Maximum scatter points in plots
+
+system_utilization:
+  detect_cores: true                        # Enable detection of CPU cores for multiprocessing
+  adjust_for_gpu: true                      # Adjust processing based on GPU availability
+  num_workers: 4                            # Number of worker processes for DataLoaders
+===== FILE: src/voxelflex/config/config.py =====
+"""
+Configuration module for Voxelflex.
+
+This module handles loading and validating YAML configuration files.
+"""
+
+import os
+import logging
+from pathlib import Path
+from typing import Dict, Any, Optional
+
+import yaml
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
+    
+    Args:
+        config_path: Path to configuration file
+        
+    Returns:
+        Configuration dictionary
+    """
+    # Expand user path if necessary
+    config_path = os.path.expanduser(config_path)
+    
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
+    
+    # Load configuration from YAML file
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    # Validate configuration
+    validate_config(config)
+    
+    # Expand paths in configuration
+    config = expand_paths(config)
+    
+    return config
+
+
+def validate_config(config: Dict[str, Any]) -> None:
+    """
+    Validate configuration dictionary.
+    
+    Args:
+        config: Configuration dictionary to validate
+        
+    Raises:
+        ValueError: If configuration is invalid
+    """
+    # Check for required sections
+    required_sections = ['input', 'output', 'model', 'training']
+    missing_sections = [section for section in required_sections if section not in config]
+    
+    if missing_sections:
+        raise ValueError(f"Missing required configuration sections: {missing_sections}")
+    
+    # Validate input section
+    if 'voxel_file' not in config['input']:
+        raise ValueError("Missing required input parameter: voxel_file")
+    
+    if 'rmsf_dir' not in config['input']:
+        raise ValueError("Missing required input parameter: rmsf_dir")
+    
+    # Validate output section
+    if 'base_dir' not in config['output']:
+        raise ValueError("Missing required output parameter: base_dir")
+    
+    # Validate model section
+    if 'architecture' not in config['model']:
+        raise ValueError("Missing required model parameter: architecture")
+    
+    valid_architectures = ['voxelflex_cnn', 'dilated_resnet3d', 'multipath_rmsf_net']
+    if config['model']['architecture'] not in valid_architectures:
+        raise ValueError(f"Invalid model architecture: {config['model']['architecture']}. "
+                         f"Must be one of: {valid_architectures}")
+    
+    # Validate training section
+    if 'batch_size' not in config['training']:
+        raise ValueError("Missing required training parameter: batch_size")
+    
+    if 'num_epochs' not in config['training']:
+        raise ValueError("Missing required training parameter: num_epochs")
+
+
+def expand_paths(config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Expand relative paths in configuration.
+    
+    Args:
+        config: Configuration dictionary
+        
+    Returns:
+        Configuration with expanded paths
+    """
+    # Expand paths in input section
+    if 'data_dir' in config['input']:
+        config['input']['data_dir'] = os.path.expanduser(config['input']['data_dir'])
+    
+    config['input']['voxel_file'] = os.path.expanduser(config['input']['voxel_file'])
+    config['input']['rmsf_dir'] = os.path.expanduser(config['input']['rmsf_dir'])
+    
+    # Expand output base directory
+    config['output']['base_dir'] = os.path.expanduser(config['output']['base_dir'])
+    
+    return config
+
+
+def get_default_config() -> Dict[str, Any]:
+    """
+    Get default configuration.
+    
+    Returns:
+        Default configuration dictionary
+    """
+    # Get the path to the default configuration file
+    default_config_path = os.path.join(
+        os.path.dirname(__file__), 
+        'default_config.yaml'
+    )
+    
+    # Load default configuration
+    with open(default_config_path, 'r') as f:
+        default_config = yaml.safe_load(f)
+    
+    return default_config
+===== FILE: src/voxelflex/cli/cli.py =====
+"""
+Command Line Interface for Voxelflex.
+
+This module provides the main CLI functionality for the Voxelflex package,
+including argument parsing and command dispatching.
+"""
+
+import argparse
+import logging
+import os
+import sys
+from pathlib import Path
+from typing import List, Optional
+
+from voxelflex.config.config import load_config
+from voxelflex.utils.logging_utils import setup_logging, get_logger
+from voxelflex.utils.system_utils import check_system_resources
+from voxelflex.cli.commands.train import train_model
+from voxelflex.cli.commands.predict import predict_rmsf
+from voxelflex.cli.commands.evaluate import evaluate_model
+from voxelflex.cli.commands.visualize import create_visualizations
+
+logger = get_logger(__name__)
+
+def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
+    """
+    Parse command line arguments.
+    
+    Args:
+        args: Command line arguments (if None, sys.argv[1:] is used)
+        
+    Returns:
+        Parsed arguments
+    """
+    parser = argparse.ArgumentParser(
+        prog="voxelflex",
+        description="Voxelflex: A package for predicting per-residue RMSF values from voxelized protein data",
+    )
+    
+    subparsers = parser.add_subparsers(dest="command", help="Command to run")
+    
+    # Run command (runs the entire pipeline)
+    run_parser = subparsers.add_parser("run", help="Run the entire pipeline")
+    run_parser.add_argument(
+        "--config", 
+        type=str, 
+        required=True,
+        help="Path to configuration file"
+    )
+    
+    # Train command
+    train_parser = subparsers.add_parser("train", help="Train a model")
+    train_parser.add_argument(
+        "--config", 
+        type=str, 
+        required=True,
+        help="Path to configuration file"
+    )
+    
+    # Predict command
+    predict_parser = subparsers.add_parser("predict", help="Make predictions with a trained model")
+    predict_parser.add_argument(
+        "--config", 
+        type=str, 
+        required=True,
+        help="Path to configuration file"
+    )
+    predict_parser.add_argument(
+        "--model", 
+        type=str, 
+        required=True,
+        help="Path to trained model file"
+    )
+    
+    # Evaluate command
+    evaluate_parser = subparsers.add_parser("evaluate", help="Evaluate model performance")
+    evaluate_parser.add_argument(
+        "--config", 
+        type=str, 
+        required=True,
+        help="Path to configuration file"
+    )
+    evaluate_parser.add_argument(
+        "--model", 
+        type=str, 
+        required=True,
+        help="Path to trained model file"
+    )
+    
+    # Visualize command
+    visualize_parser = subparsers.add_parser("visualize", help="Create visualizations")
+    visualize_parser.add_argument(
+        "--config", 
+        type=str, 
+        required=True,
+        help="Path to configuration file"
+    )
+    visualize_parser.add_argument(
+        "--predictions", 
+        type=str, 
+        required=True,
+        help="Path to predictions file"
+    )
+    
+    parsed_args = parser.parse_args(args)
+    
+    if parsed_args.command is None:
+        parser.print_help()
+        sys.exit(1)
+    
+    return parsed_args
+
+
+def run_pipeline(config_path: str) -> None:
+    """
+    Run the entire pipeline: train, predict, evaluate, and visualize.
+    
+    Args:
+        config_path: Path to configuration file
+    """
+    # Load configuration
+    config = load_config(config_path)
+    
+    # Set up logging
+    log_file = os.path.join(
+        config["output"]["base_dir"], 
+        "logs", 
+        config["output"]["log_file"]
+    )
+    setup_logging(
+        log_file=log_file, 
+        console_level=config["logging"]["console_level"],
+        file_level=config["logging"]["file_level"]
+    )
+    
+    # Check system resources
+    system_info = check_system_resources(
+        detect_cores=config["system_utilization"]["detect_cores"],
+        adjust_for_gpu=config["system_utilization"]["adjust_for_gpu"]
+    )
+    logger.info(f"System resources: {system_info}")
+    
+    # Create output directories
+    os.makedirs(os.path.join(config["output"]["base_dir"], "logs"), exist_ok=True)
+    os.makedirs(os.path.join(config["output"]["base_dir"], "models"), exist_ok=True)
+    os.makedirs(os.path.join(config["output"]["base_dir"], "metrics"), exist_ok=True)
+    os.makedirs(os.path.join(config["output"]["base_dir"], "visualizations"), exist_ok=True)
+    
+    # Train the model
+    logger.info("Starting model training")
+    model_path, train_history = train_model(config)
+    
+    # Make predictions
+    logger.info("Making predictions")
+    predictions_path = predict_rmsf(config, model_path)
+    
+    # Evaluate the model
+    logger.info("Evaluating model performance")
+    metrics_path = evaluate_model(config, model_path, predictions_path)
+    
+    # Create visualizations
+    logger.info("Creating visualizations")
+    create_visualizations(config, train_history, predictions_path)
+    
+    logger.info("Pipeline completed successfully")
+    logger.info(f"Model saved to: {model_path}")
+    logger.info(f"Predictions saved to: {predictions_path}")
+    logger.info(f"Metrics saved to: {metrics_path}")
+    logger.info(f"Visualizations saved to: {os.path.join(config['output']['base_dir'], 'visualizations')}")
+
+
+def main(args: Optional[List[str]] = None) -> None:
+    """
+    Main entry point for the CLI.
+    
+    Args:
+        args: Command line arguments (if None, sys.argv[1:] is used)
+    """
+    parsed_args = parse_args(args)
+    
+    if parsed_args.command == "run":
+        run_pipeline(parsed_args.config)
+    elif parsed_args.command == "train":
+        config = load_config(parsed_args.config)
+        setup_logging(
+            log_file=os.path.join(config["output"]["base_dir"], "logs", config["output"]["log_file"]),
+            console_level=config["logging"]["console_level"],
+            file_level=config["logging"]["file_level"]
+        )
+        train_model(config)
+    elif parsed_args.command == "predict":
+        config = load_config(parsed_args.config)
+        setup_logging(
+            log_file=os.path.join(config["output"]["base_dir"], "logs", config["output"]["log_file"]),
+            console_level=config["logging"]["console_level"],
+            file_level=config["logging"]["file_level"]
+        )
+        predict_rmsf(config, parsed_args.model)
+    elif parsed_args.command == "evaluate":
+        config = load_config(parsed_args.config)
+        setup_logging(
+            log_file=os.path.join(config["output"]["base_dir"], "logs", config["output"]["log_file"]),
+            console_level=config["logging"]["console_level"],
+            file_level=config["logging"]["file_level"]
+        )
+        evaluate_model(config, parsed_args.model)
+    elif parsed_args.command == "visualize":
+        config = load_config(parsed_args.config)
+        setup_logging(
+            log_file=os.path.join(config["output"]["base_dir"], "logs", config["output"]["log_file"]),
+            console_level=config["logging"]["console_level"],
+            file_level=config["logging"]["file_level"]
+        )
+        create_visualizations(config, None, parsed_args.predictions)
+
+
+if __name__ == "__main__":
+    main()
+===== FILE: src/voxelflex/cli/commands/predict.py =====
+"""
+Prediction command for Voxelflex.
+
+This module handles making predictions with trained RMSF models.
+"""
+
+import os
+import time
+import json
+from typing import Dict, Any, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader
+
+from voxelflex.data.data_loader import load_voxel_data, load_rmsf_data, prepare_dataloaders
+from voxelflex.models.cnn_models import get_model
+from voxelflex.utils.logging_utils import get_logger, ProgressBar
+from voxelflex.utils.file_utils import ensure_dir
+from voxelflex.utils.system_utils import get_device
+
+logger = get_logger(__name__)
+
+def predict_rmsf(
+    config: Dict[str, Any],
+    model_path: str,
+    test_loader: Optional[DataLoader] = None
+) -> str:
+    """
+    Make predictions with a trained model.
+    
+    Args:
+        config: Configuration dictionary
+        model_path: Path to the trained model file
+        test_loader: Optional test data loader. If None, one will be created.
+        
+    Returns:
+        Path to the predictions file
+    """
+    # Get device (CPU or GPU)
+    device = get_device(config["system_utilization"]["adjust_for_gpu"])
+    logger.info(f"Using device: {device}")
+    
+    # Load the model
+    logger.info(f"Loading model from {model_path}")
+    checkpoint = torch.load(model_path, map_location=device)
+    
+    model_config = checkpoint.get('config', {}).get('model', config['model'])
+    input_shape = checkpoint.get('input_shape')
+    
+    if input_shape is None:
+        logger.warning("Input shape not found in checkpoint, will try to infer from data")
+    
+    # Create and load the model
+    model = get_model(
+        architecture=model_config['architecture'],
+        input_channels=model_config['input_channels'],
+        channel_growth_rate=model_config['channel_growth_rate'],
+        num_residual_blocks=model_config['num_residual_blocks'],
+        dropout_rate=model_config['dropout_rate'],
+        base_filters=model_config['base_filters']
+    )
+    
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model = model.to(device)
+    model.eval()
+    
+    logger.info(f"Model loaded successfully")
+    
+    # Prepare data if test_loader is not provided
+    if test_loader is None:
+        # Load data
+        voxel_data = load_voxel_data(
+            config["input"]["voxel_file"],
+            config["input"]["domain_ids"] if config["input"]["domain_ids"] else None
+        )
+        
+        rmsf_data = load_rmsf_data(
+            config["input"]["rmsf_dir"],
+            config["input"].get("replica", "replica_average"),  # Use get() with default
+            config["input"]["temperature"]
+        )
+        
+        # Prepare dataloaders
+        num_workers = config.get("system_utilization", {}).get("num_workers", 4)
+        _, _, test_loader = prepare_dataloaders(
+            voxel_data,
+            rmsf_data,
+            batch_size=config["training"]["batch_size"],
+            train_split=config["training"]["train_split"],
+            val_split=config["training"]["val_split"],
+            test_split=config["training"]["test_split"],
+            num_workers=num_workers,
+            seed=config.get("training", {}).get("seed", 42)
+        )
+    
+    # Make predictions
+    all_predictions = []
+    all_targets = []
+    all_domain_resids = []
+    
+    show_progress = config["logging"]["show_progress_bars"]
+    
+    if show_progress:
+        progress = ProgressBar(total=len(test_loader), prefix="Predicting", suffix="Complete")
+    
+    logger.info("Making predictions")
+    with torch.no_grad():
+        for i, (inputs, targets) in enumerate(test_loader):
+            # Get domain and resid information
+            if hasattr(test_loader.dataset, 'samples'):
+                batch_indices = list(range(
+                    i * test_loader.batch_size,
+                    min((i + 1) * test_loader.batch_size, len(test_loader.dataset))
+                ))
+                batch_domain_resids = [test_loader.dataset.samples[idx] for idx in batch_indices]
+                all_domain_resids.extend(batch_domain_resids)
+            
+            # Move data to device
+            inputs = inputs.to(device)
+            
+            # Forward pass
+            outputs = model(inputs)
+            
+            # Store predictions and targets
+            all_predictions.extend(outputs.cpu().numpy().flatten().tolist())
+            all_targets.extend(targets.numpy().flatten().tolist())
+            
+            if show_progress:
+                progress.update(i + 1)
+    
+    if show_progress:
+        progress.finish()
+    
+    # Prepare predictions dataframe
+    predictions_df = None
+    
+    if all_domain_resids:
+        # If we have domain and residue information
+        predictions_df = pd.DataFrame({
+            'domain_id': [dr[0] for dr in all_domain_resids],
+            'resid': [dr[1] for dr in all_domain_resids],
+            'predicted_rmsf': all_predictions,
+            'actual_rmsf': all_targets
+        })
+    else:
+        # If we don't have domain and residue information
+        predictions_df = pd.DataFrame({
+            'sample_idx': list(range(len(all_predictions))),
+            'predicted_rmsf': all_predictions,
+            'actual_rmsf': all_targets
+        })
+    
+    # Save predictions
+    predictions_dir = os.path.join(config["output"]["base_dir"], "metrics")
+    ensure_dir(predictions_dir)
+    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    predictions_path = os.path.join(predictions_dir, f"predictions_{timestamp}.csv")
+    
+    predictions_df.to_csv(predictions_path, index=False)
+    logger.info(f"Predictions saved to {predictions_path}")
+    
+    return predictions_path
+===== FILE: src/voxelflex/cli/commands/visualize.py =====
+"""
+Visualization command for Voxelflex.
+
+This module handles creating visualizations for model performance and analysis.
+"""
+
+import os
+import time
+import json
+from typing import Dict, Any, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.figure import Figure
+
+from voxelflex.utils.logging_utils import get_logger
+from voxelflex.utils.file_utils import ensure_dir, load_json
+
+logger = get_logger(__name__)
+
+def create_loss_curve(
+    train_history: Dict[str, List[float]],
+    output_dir: str,
+    save_format: str = 'png',
+    dpi: int = 300
+) -> str:
+    """
+    Create a plot of training and validation loss curves.
+    
+    Args:
+        train_history: Dictionary containing training and validation losses
+        output_dir: Directory to save the plot
+        save_format: Format to save the plot (png, jpg, etc.)
+        dpi: DPI for the saved plot
+        
+    Returns:
+        Path to the saved plot
+    """
+    logger.info("Creating loss curve plot")
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    epochs = range(1, len(train_history['train_loss']) + 1)
+    ax.plot(epochs, train_history['train_loss'], 'b-', label='Training Loss')
+    ax.plot(epochs, train_history['val_loss'], 'r-', label='Validation Loss')
+    
+    ax.set_title('Training and Validation Loss')
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Loss')
+    ax.legend()
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # Save plot
+    ensure_dir(output_dir)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plot_path = os.path.join(output_dir, f"loss_curve_{timestamp}.{save_format}")
+    
+    fig.savefig(plot_path, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+    
+    logger.info(f"Loss curve plot saved to {plot_path}")
+    return plot_path
+
+
+def create_prediction_scatter(
+    predictions_df: pd.DataFrame,
+    output_dir: str,
+    save_format: str = 'png',
+    dpi: int = 300,
+    max_points: int = 1000
+) -> str:
+    """
+    Create a scatter plot of predicted vs. actual RMSF values.
+    
+    Args:
+        predictions_df: DataFrame containing predictions and actual values
+        output_dir: Directory to save the plot
+        save_format: Format to save the plot (png, jpg, etc.)
+        dpi: DPI for the saved plot
+        max_points: Maximum number of points to plot (to avoid overcrowding)
+        
+    Returns:
+        Path to the saved plot
+    """
+    logger.info("Creating prediction scatter plot")
+    
+    # Extract predictions and actual values
+    y_true = predictions_df['actual_rmsf'].values
+    y_pred = predictions_df['predicted_rmsf'].values
+    
+    # Sample points if there are too many
+    if len(y_true) > max_points:
+        logger.info(f"Sampling {max_points} points for scatter plot (out of {len(y_true)} total)")
+        indices = np.random.choice(len(y_true), max_points, replace=False)
+        y_true = y_true[indices]
+        y_pred = y_pred[indices]
+    
+    # Create plot
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # Plot points
+    ax.scatter(y_true, y_pred, alpha=0.5)
+    
+    # Add perfect prediction line
+    max_val = max(np.max(y_true), np.max(y_pred))
+    min_val = min(np.min(y_true), np.min(y_pred))
+    margin = (max_val - min_val) * 0.1
+    ax.plot([min_val - margin, max_val + margin], [min_val - margin, max_val + margin], 'r--')
+    
+    # Add correlation coefficient
+    corr = np.corrcoef(y_true, y_pred)[0, 1]
+    ax.text(
+        0.05, 0.95, f'Correlation: {corr:.4f}',
+        transform=ax.transAxes, fontsize=12,
+        verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8)
+    )
+    
+    ax.set_title('Predicted vs. Actual RMSF Values')
+    ax.set_xlabel('Actual RMSF')
+    ax.set_ylabel('Predicted RMSF')
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # Make plot square
+    ax.set_aspect('equal')
+    ax.set_xlim(min_val - margin, max_val + margin)
+    ax.set_ylim(min_val - margin, max_val + margin)
+    
+    # Save plot
+    ensure_dir(output_dir)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plot_path = os.path.join(output_dir, f"prediction_scatter_{timestamp}.{save_format}")
+    
+    fig.savefig(plot_path, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+    
+    logger.info(f"Prediction scatter plot saved to {plot_path}")
+    return plot_path
+
+
+def create_error_distribution(
+    predictions_df: pd.DataFrame,
+    output_dir: str,
+    save_format: str = 'png',
+    dpi: int = 300
+) -> str:
+    """
+    Create a histogram of prediction errors.
+    
+    Args:
+        predictions_df: DataFrame containing predictions and actual values
+        output_dir: Directory to save the plot
+        save_format: Format to save the plot (png, jpg, etc.)
+        dpi: DPI for the saved plot
+        
+    Returns:
+        Path to the saved plot
+    """
+    logger.info("Creating error distribution plot")
+    
+    # Calculate errors
+    predictions_df['error'] = predictions_df['predicted_rmsf'] - predictions_df['actual_rmsf']
+    
+    # Create plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    sns.histplot(predictions_df['error'], kde=True, ax=ax)
+    
+    ax.set_title('Distribution of Prediction Errors')
+    ax.set_xlabel('Error (Predicted - Actual)')
+    ax.set_ylabel('Frequency')
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # Add error statistics
+    mean_error = predictions_df['error'].mean()
+    std_error = predictions_df['error'].std()
+    
+    ax.axvline(mean_error, color='r', linestyle='--', label=f'Mean: {mean_error:.4f}')
+    ax.axvline(mean_error + std_error, color='g', linestyle='--', label=f'Std: {std_error:.4f}')
+    ax.axvline(mean_error - std_error, color='g', linestyle='--')
+    
+    ax.legend()
+    
+    # Save plot
+    ensure_dir(output_dir)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plot_path = os.path.join(output_dir, f"error_distribution_{timestamp}.{save_format}")
+    
+    fig.savefig(plot_path, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+    
+    logger.info(f"Error distribution plot saved to {plot_path}")
+    return plot_path
+
+
+def create_residue_type_analysis(
+    predictions_df: pd.DataFrame,
+    output_dir: str,
+    save_format: str = 'png',
+    dpi: int = 300
+) -> Optional[str]:
+    """
+    Create a box plot of prediction errors grouped by residue type.
+    
+    Args:
+        predictions_df: DataFrame containing predictions and actual values
+        output_dir: Directory to save the plot
+        save_format: Format to save the plot (png, jpg, etc.)
+        dpi: DPI for the saved plot
+        
+    Returns:
+        Path to the saved plot, or None if residue type information is not available
+    """
+    if 'resname' not in predictions_df.columns:
+        logger.warning("Residue type information not available for residue type analysis")
+        return None
+    
+    logger.info("Creating residue type analysis plot")
+    
+    # Calculate errors if not already done
+    if 'error' not in predictions_df.columns:
+        predictions_df['error'] = predictions_df['predicted_rmsf'] - predictions_df['actual_rmsf']
+    
+    # Calculate absolute errors
+    predictions_df['abs_error'] = np.abs(predictions_df['error'])
+    
+    # Create plot
+    plt.figure(figsize=(12, 8))
+    
+    # Create box plot
+    ax = sns.boxplot(x='resname', y='abs_error', data=predictions_df)
+    
+    ax.set_title('Prediction Error by Residue Type')
+    ax.set_xlabel('Residue Type')
+    ax.set_ylabel('Absolute Error')
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    # Rotate x-axis labels if there are many residue types
+    if predictions_df['resname'].nunique() > 10:
+        plt.xticks(rotation=45, ha='right')
+    
+    # Add number of samples for each residue type
+    restype_counts = predictions_df['resname'].value_counts()
+    for i, restype in enumerate(ax.get_xticklabels()):
+        restype_text = restype.get_text()
+        if restype_text in restype_counts:
+            count = restype_counts[restype_text]
+            ax.text(i, -0.1, f'n={count}', ha='center', va='top', rotation=45,
+                   transform=ax.get_xaxis_transform())
+    
+    plt.tight_layout()
+    
+    # Save plot
+    ensure_dir(output_dir)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plot_path = os.path.join(output_dir, f"residue_type_analysis_{timestamp}.{save_format}")
+    
+    plt.savefig(plot_path, dpi=dpi, bbox_inches='tight')
+    plt.close()
+    
+    logger.info(f"Residue type analysis plot saved to {plot_path}")
+    return plot_path
+
+
+def create_amino_acid_performance(
+    predictions_df: pd.DataFrame,
+    output_dir: str,
+    save_format: str = 'png',
+    dpi: int = 300
+) -> Optional[str]:
+    """
+    Create a histogram of amino acid performance metrics.
+    
+    Args:
+        predictions_df: DataFrame containing predictions and actual values
+        output_dir: Directory to save the plot
+        save_format: Format to save the plot (png, jpg, etc.)
+        dpi: DPI for the saved plot
+        
+    Returns:
+        Path to the saved plot, or None if residue type information is not available
+    """
+    if 'resname' not in predictions_df.columns:
+        logger.warning("Residue type information not available for amino acid performance analysis")
+        return None
+    
+    logger.info("Creating amino acid performance plot")
+    
+    # Calculate errors if not already done
+    if 'error' not in predictions_df.columns:
+        predictions_df['error'] = predictions_df['predicted_rmsf'] - predictions_df['actual_rmsf']
+    
+    # Calculate metrics for each amino acid
+    aa_metrics = []
+    
+    for resname in sorted(predictions_df['resname'].unique()):
+        resname_df = predictions_df[predictions_df['resname'] == resname]
+        y_true = resname_df['actual_rmsf'].values
+        y_pred = resname_df['predicted_rmsf'].values
+        
+        mse = ((y_pred - y_true) ** 2).mean()
+        rmse = np.sqrt(mse)
+        mae = np.abs(y_pred - y_true).mean()
+        
+        aa_metrics.append({
+            'resname': resname,
+            'count': len(resname_df),
+            'mse': mse,
+            'rmse': rmse,
+            'mae': mae
+        })
+    
+    aa_metrics_df = pd.DataFrame(aa_metrics)
+    
+    # Create plot
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+    
+    # Plot RMSE
+    sns.barplot(x='resname', y='rmse', data=aa_metrics_df, ax=ax1)
+    ax1.set_title('RMSE by Amino Acid')
+    ax1.set_xlabel('Amino Acid')
+    ax1.set_ylabel('RMSE')
+    ax1.grid(True, linestyle='--', alpha=0.7)
+    
+    # Plot MAE
+    sns.barplot(x='resname', y='mae', data=aa_metrics_df, ax=ax2)
+    ax2.set_title('MAE by Amino Acid')
+    ax2.set_xlabel('Amino Acid')
+    ax2.set_ylabel('MAE')
+    ax2.grid(True, linestyle='--', alpha=0.7)
+    
+    # Rotate x-axis labels
+    for ax in [ax1, ax2]:
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    
+    plt.tight_layout()
+    
+    # Save plot
+    ensure_dir(output_dir)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plot_path = os.path.join(output_dir, f"amino_acid_performance_{timestamp}.{save_format}")
+    
+    fig.savefig(plot_path, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+    
+    logger.info(f"Amino acid performance plot saved to {plot_path}")
+    return plot_path
+
+
+def create_visualizations(
+    config: Dict[str, Any],
+    train_history: Optional[Dict[str, List[float]]],
+    predictions_path: str
+) -> List[str]:
+    """
+    Create visualizations for model performance and analysis.
+    
+    Args:
+        config: Configuration dictionary
+        train_history: Training history dictionary (optional)
+        predictions_path: Path to predictions file
+        
+    Returns:
+        List of paths to created visualizations
+    """
+    logger.info("Creating visualizations")
+    
+    # Load predictions
+    predictions_df = pd.read_csv(predictions_path)
+    
+    # Create output directory
+    output_dir = os.path.join(config["output"]["base_dir"], "visualizations")
+    ensure_dir(output_dir)
+    
+    # Get visualization settings
+    viz_config = config.get("visualization", {})
+    save_format = viz_config.get("save_format", "png")
+    dpi = viz_config.get("dpi", 300)
+    max_scatter_points = viz_config.get("max_scatter_points", 1000)
+    
+    # Create visualizations
+    visualization_paths = []
+    
+    if train_history is None and viz_config.get("plot_loss", True):
+        logger.warning("Training history not provided, skipping loss curve plot")
+
+    # Loss curve (if training history is available)
+    if train_history is not None and viz_config.get("plot_loss", True):
+        loss_curve_path = create_loss_curve(
+            train_history, output_dir, save_format, dpi
+        )
+        visualization_paths.append(loss_curve_path)
+    
+    # Prediction scatter plot
+    if viz_config.get("plot_predictions", True):
+        scatter_path = create_prediction_scatter(
+            predictions_df, output_dir, save_format, dpi, max_scatter_points
+        )
+        visualization_paths.append(scatter_path)
+    
+    # Error distribution
+    if viz_config.get("plot_error_distribution", True):
+        error_dist_path = create_error_distribution(
+            predictions_df, output_dir, save_format, dpi
+        )
+        visualization_paths.append(error_dist_path)
+    
+    # Residue type analysis
+    if viz_config.get("plot_residue_type_analysis", True):
+        residue_type_path = create_residue_type_analysis(
+            predictions_df, output_dir, save_format, dpi
+        )
+        if residue_type_path:
+            visualization_paths.append(residue_type_path)
+    
+    # Amino acid performance
+    if viz_config.get("plot_amino_acid_performance", True):
+        aa_performance_path = create_amino_acid_performance(
+            predictions_df, output_dir, save_format, dpi
+        )
+        if aa_performance_path:
+            visualization_paths.append(aa_performance_path)
+    
+    logger.info(f"Created {len(visualization_paths)} visualizations")
+    return visualization_paths
+===== FILE: src/voxelflex/cli/commands/train.py =====
+"""
+Training command for Voxelflex.
+
+This module handles the training of RMSF prediction models.
+"""
+
+import os
+import time
+import json
+from typing import Dict, Any, Tuple, List, Optional
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+
+from voxelflex.data.data_loader import load_voxel_data, load_rmsf_data, prepare_dataloaders
+from voxelflex.models.cnn_models import get_model
+from voxelflex.utils.logging_utils import get_logger, ProgressBar
+from voxelflex.utils.file_utils import ensure_dir, save_json
+from voxelflex.utils.system_utils import get_device
+
+logger = get_logger(__name__)
+
+def train_epoch(
+    model: nn.Module,
+    train_loader: DataLoader,
+    criterion: nn.Module,
+    optimizer: optim.Optimizer,
+    device: torch.device,
+    epoch: int,
+    show_progress: bool = True
+) -> float:
+    """
+    Train model for one epoch.
+    
+    Args:
+        model: PyTorch model
+        train_loader: Training data loader
+        criterion: Loss function
+        optimizer: Optimizer
+        device: Device to train on (CPU or GPU)
+        epoch: Current epoch number
+        show_progress: Whether to show progress bar
+        
+    Returns:
+        Average training loss for the epoch
+    """
+    model.train()
+    running_loss = 0.0
+    
+    if show_progress:
+        progress = ProgressBar(total=len(train_loader), prefix=f"Epoch {epoch+1}", suffix="Complete")
+    
+    for i, (inputs, targets) in enumerate(train_loader):
+        # Move data to device
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+        
+        # Zero the parameter gradients
+        optimizer.zero_grad()
+        
+        # Forward pass
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+        
+        # Backward pass and optimize
+        loss.backward()
+        optimizer.step()
+        
+        # Statistics
+        running_loss += loss.item()
+        
+        if show_progress:
+            progress.update(i + 1)
+    
+    if show_progress:
+        progress.finish()
+    
+    return running_loss / len(train_loader)
+
+
+def validate(
+    model: nn.Module,
+    val_loader: DataLoader,
+    criterion: nn.Module,
+    device: torch.device,
+    show_progress: bool = True
+) -> float:
+    """
+    Validate model on validation set.
+    
+    Args:
+        model: PyTorch model
+        val_loader: Validation data loader
+        criterion: Loss function
+        device: Device to validate on (CPU or GPU)
+        show_progress: Whether to show progress bar
+        
+    Returns:
+        Average validation loss
+    """
+    model.eval()
+    running_loss = 0.0
+    
+    if show_progress:
+        progress = ProgressBar(total=len(val_loader), prefix="Validation", suffix="Complete")
+    
+    with torch.no_grad():
+        for i, (inputs, targets) in enumerate(val_loader):
+            # Move data to device
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            
+            # Forward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            
+            # Statistics
+            running_loss += loss.item()
+            
+            if show_progress:
+                progress.update(i + 1)
+    
+    if show_progress:
+        progress.finish()
+    
+    return running_loss / len(val_loader)
+
+
+def train_model(config: Dict[str, Any]) -> Tuple[str, Dict[str, List[float]]]:
+    """
+    Train an RMSF prediction model using the provided configuration.
+    
+    Args:
+        config: Configuration dictionary
+        
+    Returns:
+        Tuple of (model_path, training_history)
+    """
+    # Get device (CPU or GPU)
+    device = get_device(config["system_utilization"]["adjust_for_gpu"])
+    logger.info(f"Using device: {device}")
+    
+    # Load data
+    voxel_data = load_voxel_data(
+        config["input"]["voxel_file"],
+        config["input"]["domain_ids"] if config["input"]["domain_ids"] else None
+    )
+    
+    rmsf_data = load_rmsf_data(
+        config["input"]["rmsf_dir"],
+        config["input"]["replica"] if "replica" in config["input"] else "replica_average",
+        config["input"]["temperature"]
+    )
+    
+    # Prepare dataloaders
+    num_workers = config.get("system_utilization", {}).get("num_workers", 4)
+    train_loader, val_loader, test_loader = prepare_dataloaders(
+        voxel_data,
+        rmsf_data,
+        batch_size=config["training"]["batch_size"],
+        train_split=config["training"]["train_split"],
+        val_split=config["training"]["val_split"],
+        test_split=config["training"]["test_split"],
+        num_workers=num_workers,
+        seed=config.get("training", {}).get("seed", 42)
+    )
+    
+    # Create model
+    input_shape = None
+    for domain_id, domain_data in voxel_data.items():
+        for resid, voxel in domain_data.items():
+            input_shape = voxel.shape
+            break
+        if input_shape is not None:
+            break
+    
+    if input_shape is None:
+        raise ValueError("Could not determine input shape from voxel data")
+    
+    logger.info(f"Input shape: {input_shape}")
+    
+    model = get_model(
+        architecture=config["model"]["architecture"],
+        input_channels=input_shape[0],
+        channel_growth_rate=config["model"]["channel_growth_rate"],
+        num_residual_blocks=config["model"]["num_residual_blocks"],
+        dropout_rate=config["model"]["dropout_rate"],
+        base_filters=config["model"]["base_filters"]
+    )
+    
+    model = model.to(device)
+    logger.info(f"Created {config['model']['architecture']} model")
+    
+    # Define loss function and optimizer
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=config["training"]["learning_rate"],
+        weight_decay=config["training"]["weight_decay"]
+    )
+    
+    # Create scheduler if specified
+    scheduler = None
+    if "scheduler" in config.get("training", {}):
+        scheduler_config = config["training"]["scheduler"]
+        if scheduler_config["type"] == "reduce_on_plateau":
+            scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode=scheduler_config.get("mode", "min"),
+                factor=scheduler_config.get("factor", 0.1),
+                patience=scheduler_config.get("patience", 10),
+                verbose=True
+            )
+        elif scheduler_config["type"] == "step":
+            scheduler = optim.lr_scheduler.StepLR(
+                optimizer,
+                step_size=scheduler_config.get("step_size", 30),
+                gamma=scheduler_config.get("gamma", 0.1)
+            )
+    
+    # Train the model
+    num_epochs = config["training"]["num_epochs"]
+    show_progress = config["logging"]["show_progress_bars"]
+    
+    train_losses = []
+    val_losses = []
+    
+    logger.info(f"Starting training for {num_epochs} epochs")
+    start_time = time.time()
+    
+    for epoch in range(num_epochs):
+        # Train
+        train_loss = train_epoch(
+            model, train_loader, criterion, optimizer, device, epoch, show_progress
+        )
+        train_losses.append(train_loss)
+        
+        # Validate
+        val_loss = validate(model, val_loader, criterion, device, show_progress)
+        val_losses.append(val_loss)
+        
+        # Update scheduler if used
+        if scheduler is not None:
+            if isinstance(scheduler, optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(val_loss)
+            else:
+                scheduler.step()
+        
+        # Log progress
+        logger.info(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}")
+    
+    training_time = time.time() - start_time
+    logger.info(f"Training completed in {training_time:.2f} seconds")
+    
+    # Save the model
+    model_dir = os.path.join(config["output"]["base_dir"], "models")
+    ensure_dir(model_dir)
+    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    model_path = os.path.join(model_dir, f"{config['model']['architecture']}_{timestamp}.pt")
+    
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'config': config,
+        'input_shape': input_shape,
+        'train_losses': train_losses,
+        'val_losses': val_losses,
+        'epoch': num_epochs
+    }, model_path)
+    
+    logger.info(f"Model saved to {model_path}")
+    
+    # Save training history
+    history = {
+        'train_loss': train_losses,
+        'val_loss': val_losses
+    }
+    
+    history_path = os.path.join(model_dir, f"training_history_{timestamp}.json")
+    save_json(history, history_path)
+    
+    logger.info(f"Training history saved to {history_path}")
+    
+    return model_path, history
+===== FILE: src/voxelflex/cli/commands/evaluate.py =====
+"""
+Evaluation command for Voxelflex.
+
+This module handles evaluating the performance of trained RMSF models.
+"""
+
+import os
+import time
+import json
+from typing import Dict, Any, Optional
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+from voxelflex.utils.logging_utils import get_logger
+from voxelflex.utils.file_utils import ensure_dir, save_json
+
+logger = get_logger(__name__)
+
+def evaluate_model(
+    config: Dict[str, Any],
+    model_path: str,
+    predictions_path: Optional[str] = None
+) -> str:
+    """
+    Evaluate model performance using various metrics.
+    
+    Args:
+        config: Configuration dictionary
+        model_path: Path to the trained model file
+        predictions_path: Path to predictions file. If None, predictions will be made.
+        
+    Returns:
+        Path to the metrics file
+    """
+    logger.info("Evaluating model performance")
+    
+    # If predictions_path is not provided, generate predictions
+    if predictions_path is None:
+        from voxelflex.cli.commands.predict import predict_rmsf
+        predictions_path = predict_rmsf(config, model_path)
+    
+    # Load predictions
+    logger.info(f"Loading predictions from {predictions_path}")
+    predictions_df = pd.read_csv(predictions_path)
+    
+    # Extract predictions and actual values
+    y_true = predictions_df['actual_rmsf'].values
+    y_pred = predictions_df['predicted_rmsf'].values
+    
+    # Calculate metrics
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+    
+    # Calculate domain-level metrics if domain info is available
+    domain_metrics = {}
+    if 'domain_id' in predictions_df.columns:
+        for domain in predictions_df['domain_id'].unique():
+            domain_df = predictions_df[predictions_df['domain_id'] == domain]
+            domain_y_true = domain_df['actual_rmsf'].values
+            domain_y_pred = domain_df['predicted_rmsf'].values
+            
+            domain_metrics[domain] = {
+                'mse': mean_squared_error(domain_y_true, domain_y_pred),
+                'rmse': np.sqrt(mean_squared_error(domain_y_true, domain_y_pred)),
+                'mae': mean_absolute_error(domain_y_true, domain_y_pred),
+                'r2': r2_score(domain_y_true, domain_y_pred),
+                'num_residues': len(domain_df)
+            }
+    
+    # Calculate residue type metrics if residue type info is available
+    residue_type_metrics = {}
+    if 'resname' in predictions_df.columns:
+        for resname in predictions_df['resname'].unique():
+            resname_df = predictions_df[predictions_df['resname'] == resname]
+            resname_y_true = resname_df['actual_rmsf'].values
+            resname_y_pred = resname_df['predicted_rmsf'].values
+            
+            residue_type_metrics[resname] = {
+                'mse': mean_squared_error(resname_y_true, resname_y_pred),
+                'rmse': np.sqrt(mean_squared_error(resname_y_true, resname_y_pred)),
+                'mae': mean_absolute_error(resname_y_true, resname_y_pred),
+                'r2': r2_score(resname_y_true, resname_y_pred),
+                'num_residues': len(resname_df)
+            }
+    
+    # Log overall metrics
+    logger.info(f"Overall Mean Squared Error (MSE): {mse:.6f}")
+    logger.info(f"Overall Root Mean Squared Error (RMSE): {rmse:.6f}")
+    logger.info(f"Overall Mean Absolute Error (MAE): {mae:.6f}")
+    logger.info(f"Overall R²: {r2:.6f}")
+    
+    # Save metrics
+    metrics = {
+        'overall': {
+            'mse': float(mse),
+            'rmse': float(rmse),
+            'mae': float(mae),
+            'r2': float(r2),
+            'num_samples': len(y_true)
+        },
+        'domains': domain_metrics,
+        'residue_types': residue_type_metrics
+    }
+    
+    metrics_dir = os.path.join(config["output"]["base_dir"], "metrics")
+    ensure_dir(metrics_dir)
+    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    metrics_path = os.path.join(metrics_dir, f"metrics_{timestamp}.json")
+    
+    save_json(metrics, metrics_path)
+    logger.info(f"Metrics saved to {metrics_path}")
+    
+    return metrics_path
+===== FILE: src/voxelflex/cli/commands/__init__.py =====
+# In src/voxelflex/cli/commands/__init__.py
+from voxelflex.cli.commands.train import train_model
+from voxelflex.cli.commands.predict import predict_rmsf
+from voxelflex.cli.commands.evaluate import evaluate_model
+from voxelflex.cli.commands.visualize import create_visualizations
+===== FILE: src/voxelflex/cli/__init__.py =====
+# In src/voxelflex/cli/__init__.py
+from voxelflex.cli.commands import train, predict, evaluate, visualize
+===== FILE: src/voxelflex/data/data_loader.py =====
+"""
+Data loading module for Voxelflex.
+
+This module handles loading and processing of voxelized protein data (.hdf5)
+and RMSF data (.csv).
+"""
+
+import os
+import logging
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Union, Any
+
+import h5py
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+from voxelflex.data.validators import (
+    validate_voxel_data,
+    validate_rmsf_data,
+    validate_domain_residue_mapping
+)
+from voxelflex.utils.logging_utils import get_logger
+from voxelflex.utils.file_utils import resolve_path
+
+logger = get_logger(__name__)
+
+class RMSFDataset(Dataset):
+    """PyTorch Dataset for voxel and RMSF data."""
+    
+    def __init__(
+        self,
+        voxel_data: Dict[str, Dict[str, np.ndarray]],
+        rmsf_data: pd.DataFrame,
+        domain_mapping: Dict[str, str],
+        transform=None
+    ):
+        """
+        Initialize RMSF dataset.
+        
+        Args:
+            voxel_data: Dictionary mapping domain_ids to voxel data
+            rmsf_data: DataFrame containing RMSF values
+            domain_mapping: Mapping from hdf5 domain to RMSF domain
+            transform: Optional transforms to apply
+        """
+        self.voxel_data = voxel_data
+        self.rmsf_data = rmsf_data
+        self.domain_mapping = domain_mapping
+        self.transform = transform
+        
+        # Create a list of (domain_id, residue_id) tuples for indexing
+        self.samples = []
+        for domain_id, domain_data in voxel_data.items():
+            for resid in domain_data:
+                try:
+                    rmsf_domain = self.domain_mapping.get(domain_id, domain_id)
+                    # Check if this (domain, residue) pair exists in RMSF data
+                    rmsf_value = self.rmsf_data[
+                        (self.rmsf_data['domain_id'] == rmsf_domain) & 
+                        (self.rmsf_data['resid'] == int(resid))
+                    ]['average_rmsf']
+                    
+                    if len(rmsf_value) > 0:
+                        self.samples.append((domain_id, resid))
+                except Exception as e:
+                    logger.debug(f"Skipping {domain_id}:{resid} - {str(e)}")
+        
+        logger.info(f"Created dataset with {len(self.samples)} samples")
+    
+    def __len__(self) -> int:
+        return len(self.samples)
+    
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
+        domain_id, resid = self.samples[idx]
+        voxel = self.voxel_data[domain_id][resid]
+        
+        # Get the corresponding RMSF value
+        rmsf_domain = self.domain_mapping.get(domain_id, domain_id)
+        rmsf_value = self.rmsf_data[
+            (self.rmsf_data['domain_id'] == rmsf_domain) & 
+            (self.rmsf_data['resid'] == int(resid))
+        ]['average_rmsf'].values[0]
+        
+        # Convert to tensors
+        voxel_tensor = torch.tensor(voxel, dtype=torch.float32)
+        rmsf_tensor = torch.tensor(rmsf_value, dtype=torch.float32)
+        
+        if self.transform:
+            voxel_tensor = self.transform(voxel_tensor)
+            
+        return voxel_tensor, rmsf_tensor
+
+
+def load_voxel_data(
+    voxel_file: str,
+    domain_ids: Optional[List[str]] = None
+) -> Dict[str, Dict[str, np.ndarray]]:
+    """
+    Load voxel data from HDF5 file.
+    
+    Args:
+        voxel_file: Path to HDF5 file
+        domain_ids: Optional list of domain IDs to load. If None, load all domains.
+        
+    Returns:
+        Dictionary mapping domain IDs to dictionaries of residue voxel data
+    """
+    voxel_file = resolve_path(voxel_file)
+    logger.info(f"Loading voxel data from {voxel_file}")
+    
+    if not os.path.exists(voxel_file):
+        raise FileNotFoundError(f"Voxel file not found: {voxel_file}")
+    
+    voxel_data = {}
+    
+    with h5py.File(voxel_file, 'r') as f:
+        # Get list of all domains in the file
+        available_domains = list(f.keys())
+        logger.info(f"Found {len(available_domains)} domains in voxel file")
+        
+        # Filter domains if domain_ids is provided
+        if domain_ids:
+            domains_to_process = [d for d in available_domains if d in domain_ids]
+            if not domains_to_process:
+                logger.warning(f"None of the specified domain_ids were found in the voxel file")
+        else:
+            domains_to_process = available_domains
+        
+        logger.info(f"Processing {len(domains_to_process)} domains")
+        
+        # Process each domain
+        for domain_id in domains_to_process:
+            domain_group = f[domain_id]
+            
+            # Get the group containing residue data (typically group '0')
+            residue_group = None
+            for group_name in domain_group.keys():
+                if group_name.isdigit():  # Find the first digit-named group
+                    residue_group = domain_group[group_name]
+                    break
+            
+            if residue_group is None:
+                logger.warning(f"No residue group found for domain {domain_id}")
+                continue
+            
+            # Load residue voxel data
+            domain_data = {}
+            for resid in residue_group.keys():
+                if resid.isdigit():  # Ensure it's a residue ID
+                    residue_data = residue_group[resid]
+                    
+                    # Check if 'voxel' dataset exists
+                    if 'voxel' in residue_data:
+                        voxel = residue_data['voxel'][:]
+                        domain_data[resid] = voxel
+            
+            if domain_data:
+                voxel_data[domain_id] = domain_data
+                logger.debug(f"Loaded {len(domain_data)} residues for domain {domain_id}")
+            else:
+                logger.warning(f"No voxel data found for domain {domain_id}")
+    
+    # Validate the loaded voxel data
+    voxel_data = validate_voxel_data(voxel_data)
+    
+    return voxel_data
+
+
+def load_rmsf_data(
+    rmsf_dir: str,
+    replica: str = "replica_average",
+    temperature: Union[int, str] = 320
+) -> pd.DataFrame:
+    """
+    Load RMSF data from CSV file.
+    
+    Args:
+        rmsf_dir: Base directory for RMSF data
+        replica: Replica folder name (default: "replica_average")
+        temperature: Temperature value (default: 320)
+        
+    Returns:
+        DataFrame containing RMSF data
+    """
+    rmsf_dir = resolve_path(rmsf_dir)
+    logger.info(f"Loading RMSF data from {rmsf_dir}, replica={replica}, temperature={temperature}")
+    
+    # Construct the path to the RMSF CSV file
+    if isinstance(temperature, int):
+        temperature_str = str(temperature)
+    else:
+        temperature_str = temperature
+    
+    rmsf_file = os.path.join(
+        rmsf_dir, 
+        replica, 
+        temperature_str,
+        f"rmsf_{replica}_temperature{temperature_str}.csv"
+    )
+    
+    if not os.path.exists(rmsf_file):
+        raise FileNotFoundError(f"RMSF file not found: {rmsf_file}")
+    
+    # Load the CSV file
+    rmsf_data = pd.read_csv(rmsf_file)
+    
+    # Validate the RMSF data
+    rmsf_data = validate_rmsf_data(rmsf_data)
+    
+    logger.info(f"Loaded RMSF data with {len(rmsf_data)} entries")
+    return rmsf_data
+
+
+def create_domain_mapping(
+    voxel_domains: List[str],
+    rmsf_domains: List[str]
+) -> Dict[str, str]:
+    """
+    Create mapping between voxel domain IDs and RMSF domain IDs.
+    
+    Args:
+        voxel_domains: List of domain IDs from voxel data
+        rmsf_domains: List of domain IDs from RMSF data
+        
+    Returns:
+        Dictionary mapping voxel domain IDs to RMSF domain IDs
+    """
+    logger.info("Creating domain mapping")
+    
+    mapping = {}
+    
+    # First, try direct matches
+    for voxel_domain in voxel_domains:
+        if voxel_domain in rmsf_domains:
+            mapping[voxel_domain] = voxel_domain
+        else:
+            # Try to extract a "clean" domain name
+            # Example: Convert "1a02F00_pdb" to "1a02F00"
+            clean_domain = voxel_domain.split('_')[0]
+            if clean_domain in rmsf_domains:
+                mapping[voxel_domain] = clean_domain
+            else:
+                logger.warning(f"No matching RMSF domain found for voxel domain {voxel_domain}")
+    
+    logger.info(f"Created mapping for {len(mapping)} domains out of {len(voxel_domains)}")
+    return mapping
+
+
+def prepare_dataloaders(
+    voxel_data: Dict[str, Dict[str, np.ndarray]],
+    rmsf_data: pd.DataFrame,
+    batch_size: int = 32,
+    train_split: float = 0.7,
+    val_split: float = 0.15,
+    test_split: float = 0.15,
+    num_workers: int = 4,
+    seed: int = 42
+) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    """
+    Prepare PyTorch DataLoaders for training, validation, and testing.
+    
+    Args:
+        voxel_data: Dictionary mapping domain IDs to voxel data
+        rmsf_data: DataFrame containing RMSF values
+        batch_size: Batch size for DataLoaders
+        train_split: Proportion of data for training
+        val_split: Proportion of data for validation
+        test_split: Proportion of data for testing
+        num_workers: Number of worker processes for DataLoaders
+        seed: Random seed for reproducibility
+        
+    Returns:
+        Tuple of (train_loader, val_loader, test_loader)
+    """
+    logger.info("Preparing DataLoaders")
+    
+    # Create domain mapping
+    voxel_domains = list(voxel_data.keys())
+    rmsf_domains = rmsf_data['domain_id'].unique().tolist()
+    domain_mapping = create_domain_mapping(voxel_domains, rmsf_domains)
+    
+    # Validate the mapping
+    validate_domain_residue_mapping(voxel_data, rmsf_data, domain_mapping)
+    
+    # Create dataset
+    dataset = RMSFDataset(voxel_data, rmsf_data, domain_mapping)
+    
+    # Split the dataset
+    dataset_size = len(dataset)
+    indices = list(range(dataset_size))
+    
+    np.random.seed(seed)
+    np.random.shuffle(indices)
+    
+    train_end = int(train_split * dataset_size)
+    val_end = train_end + int(val_split * dataset_size)
+    
+    train_indices = indices[:train_end]
+    val_indices = indices[train_end:val_end]
+    test_indices = indices[val_end:]
+    
+    logger.info(f"Split dataset into {len(train_indices)} training, "
+                f"{len(val_indices)} validation, and {len(test_indices)} test samples")
+    
+    # Create DataLoaders
+    train_loader = DataLoader(
+        dataset, batch_size=batch_size, 
+        sampler=torch.utils.data.SubsetRandomSampler(train_indices),
+        num_workers=num_workers, pin_memory=True
+    )
+    
+    val_loader = DataLoader(
+        dataset, batch_size=batch_size,
+        sampler=torch.utils.data.SubsetRandomSampler(val_indices),
+        num_workers=num_workers, pin_memory=True
+    )
+    
+    test_loader = DataLoader(
+        dataset, batch_size=batch_size,
+        sampler=torch.utils.data.SubsetRandomSampler(test_indices),
+        num_workers=num_workers, pin_memory=True
+    )
+    
+    return train_loader, val_loader, test_loader
+===== FILE: src/voxelflex/data/validators.py =====
+"""
+Data validation module for Voxelflex.
+
+This module provides functions to validate voxel and RMSF data
+to ensure consistency and proper format before processing.
+"""
+
+import logging
+from typing import Dict, List, Set, Any
+
+import numpy as np
+import pandas as pd
+
+from voxelflex.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
+
+def validate_voxel_data(voxel_data: Dict[str, Dict[str, np.ndarray]]) -> Dict[str, Dict[str, np.ndarray]]:
+    """
+    Validate voxel data to ensure consistent shapes and formats.
+    
+    Args:
+        voxel_data: Dictionary mapping domain IDs to dictionaries of residue voxel data
+        
+    Returns:
+        Validated voxel data
+    """
+    logger.info("Validating voxel data")
+    
+    if not voxel_data:
+        raise ValueError("Empty voxel data")
+    
+    valid_data = {}
+    expected_ndim = None
+    expected_channels = None
+    
+    # First pass: determine expected dimensions
+    for domain_id, domain_data in voxel_data.items():
+        if not domain_data:
+            logger.warning(f"Empty domain data for {domain_id}")
+            continue
+            
+        # Get the first residue's voxel data to determine expected shape
+        first_resid = next(iter(domain_data))
+        first_voxel = domain_data[first_resid]
+        
+        if expected_ndim is None:
+            expected_ndim = first_voxel.ndim
+            if expected_ndim != 4:  # [channels, x, y, z]
+                logger.warning(f"Unexpected voxel dimensions: {expected_ndim}, expected 4")
+            
+        if expected_channels is None and expected_ndim >= 1:
+            expected_channels = first_voxel.shape[0]
+            logger.info(f"Detected {expected_channels} channels in voxel data")
+            
+            # Check if we have the right number of channels
+            if expected_channels not in [4, 5]:
+                logger.warning(f"Unexpected number of channels: {expected_channels}, expected 4 or 5")
+    
+    # Second pass: validate and filter data
+    total_residues = 0
+    valid_residues = 0
+    
+    for domain_id, domain_data in voxel_data.items():
+        valid_domain_data = {}
+        
+        for resid, voxel in domain_data.items():
+            total_residues += 1
+            
+            # Check dimensions
+            if voxel.ndim != expected_ndim:
+                logger.debug(f"Skipping {domain_id}:{resid} - Inconsistent dimensions: {voxel.ndim} vs {expected_ndim}")
+                continue
+                
+            # Check number of channels
+            if voxel.shape[0] != expected_channels:
+                logger.debug(f"Skipping {domain_id}:{resid} - Inconsistent channels: {voxel.shape[0]} vs {expected_channels}")
+                continue
+            
+            # Check for NaN or Inf values
+            if np.isnan(voxel).any() or np.isinf(voxel).any():
+                logger.debug(f"Skipping {domain_id}:{resid} - Contains NaN or Inf values")
+                continue
+            
+            valid_domain_data[resid] = voxel
+            valid_residues += 1
+        
+        if valid_domain_data:
+            valid_data[domain_id] = valid_domain_data
+    
+    logger.info(f"Validated {valid_residues}/{total_residues} residues "
+                f"across {len(valid_data)}/{len(voxel_data)} domains")
+    
+    if not valid_data:
+        raise ValueError("No valid voxel data after validation")
+    
+    return valid_data
+
+
+def validate_rmsf_data(rmsf_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Validate RMSF data to ensure it has the required columns and format.
+    
+    Args:
+        rmsf_data: DataFrame containing RMSF data
+        
+    Returns:
+        Validated RMSF data
+    """
+    logger.info("Validating RMSF data")
+    
+    # Check if the dataframe is empty
+    if rmsf_data.empty:
+        raise ValueError("Empty RMSF data")
+    
+    # Check for required columns
+    required_columns = ['domain_id', 'resid', 'resname', 'average_rmsf']
+    missing_columns = [col for col in required_columns if col not in rmsf_data.columns]
+    
+    if missing_columns:
+        raise ValueError(f"RMSF data missing required columns: {missing_columns}")
+    
+    # Check for NaN values
+    nan_counts = rmsf_data[required_columns].isna().sum()
+    if nan_counts.sum() > 0:
+        logger.warning(f"RMSF data contains NaN values: {nan_counts}")
+        
+        # Drop rows with NaN values in required columns
+        rmsf_data = rmsf_data.dropna(subset=required_columns)
+        logger.info(f"Dropped rows with NaN values, {len(rmsf_data)} rows remain")
+    
+    # Check for negative RMSF values
+    negative_rmsf = (rmsf_data['average_rmsf'] < 0).sum()
+    if negative_rmsf > 0:
+        logger.warning(f"RMSF data contains {negative_rmsf} negative values")
+        
+        # Filter out negative values
+        rmsf_data = rmsf_data[rmsf_data['average_rmsf'] >= 0]
+        logger.info(f"Filtered out negative RMSF values, {len(rmsf_data)} rows remain")
+    
+    # Check for duplicate (domain_id, resid) pairs
+    duplicates = rmsf_data.duplicated(subset=['domain_id', 'resid']).sum()
+    if duplicates > 0:
+        logger.warning(f"RMSF data contains {duplicates} duplicate (domain_id, resid) pairs")
+        
+        # Keep only the first occurrence of each pair
+        rmsf_data = rmsf_data.drop_duplicates(subset=['domain_id', 'resid'])
+        logger.info(f"Removed duplicates, {len(rmsf_data)} rows remain")
+    
+    if rmsf_data.empty:
+        raise ValueError("No valid RMSF data after validation")
+    
+    logger.info(f"RMSF data validation complete: {len(rmsf_data)} valid entries")
+    
+    # Print summary statistics
+    logger.info(f"RMSF value range: [{rmsf_data['average_rmsf'].min():.4f}, {rmsf_data['average_rmsf'].max():.4f}]")
+    logger.info(f"RMSF value mean: {rmsf_data['average_rmsf'].mean():.4f}")
+    logger.info(f"Number of unique domains: {rmsf_data['domain_id'].nunique()}")
+    logger.info(f"Number of unique residue types: {rmsf_data['resname'].nunique()}")
+    
+    return rmsf_data
+
+
+def validate_domain_residue_mapping(
+    voxel_data: Dict[str, Dict[str, np.ndarray]],
+    rmsf_data: pd.DataFrame,
+    domain_mapping: Dict[str, str]
+) -> None:
+    """
+    Validate mapping between voxel and RMSF data at domain and residue level.
+    
+    Args:
+        voxel_data: Dictionary mapping domain IDs to voxel data
+        rmsf_data: DataFrame containing RMSF data
+        domain_mapping: Mapping from voxel domain IDs to RMSF domain IDs
+    """
+    logger.info("Validating domain and residue mapping")
+    
+    # Count the number of domains in each dataset
+    num_voxel_domains = len(voxel_data)
+    num_rmsf_domains = rmsf_data['domain_id'].nunique()
+    num_mapped_domains = len(domain_mapping)
+    
+    logger.info(f"Voxel domains: {num_voxel_domains}, RMSF domains: {num_rmsf_domains}, "
+                f"Mapped domains: {num_mapped_domains}")
+    
+    # Check mapping coverage
+    unmapped_domains = [d for d in voxel_data.keys() if d not in domain_mapping]
+    if unmapped_domains:
+        logger.warning(f"{len(unmapped_domains)}/{num_voxel_domains} voxel domains could not be mapped to RMSF domains")
+        logger.debug(f"Unmapped domains: {unmapped_domains[:5]}{'...' if len(unmapped_domains) > 5 else ''}")
+    
+    # Check residue mapping
+    total_voxel_residues = sum(len(domain_data) for domain_data in voxel_data.values())
+    mapped_residues = 0
+    
+    # Create a set of (domain_id, resid) pairs from RMSF data for faster lookup
+    rmsf_domain_resid_set = set(
+        (domain, resid) for domain, resid in 
+        zip(rmsf_data['domain_id'], rmsf_data['resid'])
+    )
+    
+    # Check each voxel residue
+    for voxel_domain, domain_data in voxel_data.items():
+        if voxel_domain not in domain_mapping:
+            continue
+            
+        rmsf_domain = domain_mapping[voxel_domain]
+        
+        for resid in domain_data:
+            try:
+                resid_int = int(resid)
+                if (rmsf_domain, resid_int) in rmsf_domain_resid_set:
+                    mapped_residues += 1
+            except ValueError:
+                logger.debug(f"Could not convert residue ID to integer: {resid}")
+    
+    logger.info(f"Successfully mapped {mapped_residues}/{total_voxel_residues} voxel residues to RMSF data "
+                f"({mapped_residues/total_voxel_residues*100:.1f}%)")
+    
+    if mapped_residues == 0:
+        raise ValueError("No residues could be mapped between voxel and RMSF data")
+===== FILE: src/voxelflex/data/__init__.py =====
+# In src/voxelflex/data/__init__.py
+from voxelflex.data.data_loader import load_voxel_data, load_rmsf_data, prepare_dataloaders, RMSFDataset
+from voxelflex.data.validators import validate_voxel_data, validate_rmsf_data, validate_domain_residue_mapping
+===== FILE: src/voxelflex/models/cnn_models.py =====
+"""
+CNN models for Voxelflex.
+
+This module contains PyTorch 3D CNN architectures for RMSF prediction.
+"""
+
+from typing import List, Tuple, Dict, Any, Optional, Union
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from voxelflex.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
+
+class ResidualBlock3D(nn.Module):
+    """3D Residual block with dilated convolutions."""
+    
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        dilation: int = 1,
+        dropout_rate: float = 0.3
+    ):
+        """
+        Initialize a 3D residual block.
+        
+        Args:
+            in_channels: Number of input channels
+            out_channels: Number of output channels
+            dilation: Dilation rate for convolution
+            dropout_rate: Dropout rate
+        """
+        super().__init__()
+        
+        self.conv1 = nn.Conv3d(
+            in_channels, out_channels, kernel_size=3, 
+            padding=dilation, dilation=dilation, bias=False
+        )
+        self.bn1 = nn.BatchNorm3d(out_channels)
+        self.conv2 = nn.Conv3d(
+            out_channels, out_channels, kernel_size=3, 
+            padding=dilation, dilation=dilation, bias=False
+        )
+        self.bn2 = nn.BatchNorm3d(out_channels)
+        self.dropout = nn.Dropout3d(dropout_rate)
+        
+        # Skip connection
+        self.skip = nn.Sequential()
+        if in_channels != out_channels:
+            self.skip = nn.Sequential(
+                nn.Conv3d(in_channels, out_channels, kernel_size=1, bias=False),
+                nn.BatchNorm3d(out_channels)
+            )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the residual block."""
+        residual = self.skip(x)
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = F.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        
+        out = out + residual
+        out = F.relu(out)
+        out = self.dropout(out)
+        
+        return out
+
+
+class VoxelFlexCNN(nn.Module):
+    """
+    Basic 3D CNN architecture for RMSF prediction.
+    
+    This model uses a series of 3D convolutional layers followed by fully connected
+    layers to predict RMSF values from voxelized protein data.
+    """
+    
+    def __init__(
+        self,
+        input_channels: int = 5,
+        base_filters: int = 32,
+        channel_growth_rate: float = 1.5,
+        dropout_rate: float = 0.3
+    ):
+        """
+        Initialize VoxelFlexCNN.
+        
+        Args:
+            input_channels: Number of input channels (typically 4 or 5)
+            base_filters: Number of filters in the first convolutional layer
+            channel_growth_rate: Growth rate for channels in successive layers
+            dropout_rate: Dropout rate
+        """
+        super().__init__()
+        
+        # Calculate channel sizes for each layer
+        c1 = base_filters
+        c2 = int(c1 * channel_growth_rate)
+        c3 = int(c2 * channel_growth_rate)
+        c4 = int(c3 * channel_growth_rate)
+        
+        # Convolutional layers
+        self.conv1 = nn.Conv3d(input_channels, c1, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv3d(c1, c2, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv3d(c2, c3, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv3d(c3, c4, kernel_size=3, padding=1)
+        
+        # Batch normalization layers
+        self.bn1 = nn.BatchNorm3d(c1)
+        self.bn2 = nn.BatchNorm3d(c2)
+        self.bn3 = nn.BatchNorm3d(c3)
+        self.bn4 = nn.BatchNorm3d(c4)
+        
+        # Dropout
+        self.dropout = nn.Dropout3d(dropout_rate)
+        
+        # Global average pooling
+        self.global_avg_pool = nn.AdaptiveAvgPool3d(1)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(c4, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 1)
+        
+        # Initialize weights
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize model weights."""
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the network."""
+        # Convolutional layers
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.max_pool3d(x, 2)
+        
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.max_pool3d(x, 2)
+        
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = self.dropout(x)
+        
+        x = F.relu(self.bn4(self.conv4(x)))
+        
+        # Global average pooling
+        x = self.global_avg_pool(x)
+        x = x.view(x.size(0), -1)
+        
+        # Fully connected layers
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        
+        return x.squeeze(1)
+
+
+class DilatedResNet3D(nn.Module):
+    """
+    Dilated ResNet 3D architecture for RMSF prediction.
+    
+    This model uses residual blocks with dilated convolutions for better
+    capturing multi-scale features in voxelized protein data.
+    """
+    
+    def __init__(
+        self,
+        input_channels: int = 5,
+        base_filters: int = 32,
+        channel_growth_rate: float = 1.5,
+        num_residual_blocks: int = 4,
+        dropout_rate: float = 0.3
+    ):
+        """
+        Initialize DilatedResNet3D.
+        
+        Args:
+            input_channels: Number of input channels (typically 4 or 5)
+            base_filters: Number of filters in the first convolutional layer
+            channel_growth_rate: Growth rate for channels in successive layers
+            num_residual_blocks: Number of residual blocks
+            dropout_rate: Dropout rate
+        """
+        super().__init__()
+        
+        # Initial convolution
+        self.conv1 = nn.Conv3d(input_channels, base_filters, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm3d(base_filters)
+        
+        # Calculate channel sizes for each layer
+        channels = [base_filters]
+        for i in range(num_residual_blocks):
+            channels.append(int(channels[-1] * channel_growth_rate))
+        
+        # Residual blocks with increasing dilation
+        self.res_blocks = nn.ModuleList()
+        for i in range(num_residual_blocks):
+            dilation = 2 ** (i % 3)  # Dilations: 1, 2, 4, 1, 2, 4, ...
+            block = ResidualBlock3D(
+                channels[i], channels[i+1], dilation=dilation, dropout_rate=dropout_rate
+            )
+            self.res_blocks.append(block)
+        
+        # Global average pooling
+        self.global_avg_pool = nn.AdaptiveAvgPool3d(1)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(channels[-1], 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 1)
+        
+        # Initialize weights
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize model weights."""
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the network."""
+        # Initial convolution
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = F.max_pool3d(x, kernel_size=3, stride=2, padding=1)
+        
+        # Residual blocks
+        for block in self.res_blocks:
+            x = block(x)
+        
+        # Global average pooling
+        x = self.global_avg_pool(x)
+        x = x.view(x.size(0), -1)
+        
+        # Fully connected layers
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        
+        return x.squeeze(1)
+
+
+class MultipathRMSFNet(nn.Module):
+    """
+    Multi-path 3D CNN architecture for RMSF prediction.
+    
+    This model uses multiple parallel paths with different kernel sizes
+    to capture features at different scales.
+    """
+    
+    def __init__(
+        self,
+        input_channels: int = 5,
+        base_filters: int = 32,
+        channel_growth_rate: float = 1.5,
+        num_residual_blocks: int = 3,
+        dropout_rate: float = 0.3
+    ):
+        """
+        Initialize MultipathRMSFNet.
+        
+        Args:
+            input_channels: Number of input channels (typically 4 or 5)
+            base_filters: Number of filters in the first convolutional layer
+            channel_growth_rate: Growth rate for channels in successive layers
+            num_residual_blocks: Number of residual blocks in each path
+            dropout_rate: Dropout rate
+        """
+        super().__init__()
+        
+        # Calculate channel sizes
+        c1 = base_filters
+        c2 = int(c1 * channel_growth_rate)
+        c3 = int(c2 * channel_growth_rate)
+        
+        # Initial convolution
+        self.conv1 = nn.Conv3d(input_channels, c1, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm3d(c1)
+        
+        # Multi-path branches with different kernel sizes
+        self.path1 = self._create_path(c1, c2, kernel_size=3, blocks=num_residual_blocks, dropout_rate=dropout_rate)
+        self.path2 = self._create_path(c1, c2, kernel_size=5, blocks=num_residual_blocks, dropout_rate=dropout_rate)
+        self.path3 = self._create_path(c1, c2, kernel_size=7, blocks=num_residual_blocks, dropout_rate=dropout_rate)
+        
+        # Fusion layer
+        self.fusion = nn.Conv3d(c2 * 3, c3, kernel_size=1, bias=False)
+        self.fusion_bn = nn.BatchNorm3d(c3)
+        
+        # Global average pooling
+        self.global_avg_pool = nn.AdaptiveAvgPool3d(1)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(c3, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 1)
+        
+        # Dropout
+        self.dropout = nn.Dropout(dropout_rate)
+        
+        # Initialize weights
+        self._initialize_weights()
+    
+    def _create_path(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        blocks: int,
+        dropout_rate: float
+    ) -> nn.Sequential:
+        """
+        Create a path with multiple convolutional blocks.
+        
+        Args:
+            in_channels: Number of input channels
+            out_channels: Number of output channels
+            kernel_size: Kernel size for convolutions
+            blocks: Number of blocks
+            dropout_rate: Dropout rate
+            
+        Returns:
+            Sequential container of blocks
+        """
+        layers = []
+        
+        # First block
+        padding = kernel_size // 2
+        layers.append(nn.Conv3d(in_channels, out_channels, kernel_size=kernel_size, padding=padding, bias=False))
+        layers.append(nn.BatchNorm3d(out_channels))
+        layers.append(nn.ReLU(inplace=True))
+        layers.append(nn.MaxPool3d(kernel_size=2, stride=2))
+        
+        # Additional blocks
+        for _ in range(blocks - 1):
+            layers.append(nn.Conv3d(out_channels, out_channels, kernel_size=kernel_size, padding=padding, bias=False))
+            layers.append(nn.BatchNorm3d(out_channels))
+            layers.append(nn.ReLU(inplace=True))
+            layers.append(nn.Dropout3d(dropout_rate))
+        
+        return nn.Sequential(*layers)
+    
+    def _initialize_weights(self):
+        """Initialize model weights."""
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the network."""
+        # Initial convolution
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = F.max_pool3d(x, kernel_size=3, stride=2, padding=1)
+        
+        # Multi-path processing
+        out1 = self.path1(x)
+        out2 = self.path2(x)
+        out3 = self.path3(x)
+        
+        # Concatenate outputs
+        out = torch.cat([out1, out2, out3], dim=1)
+        
+        # Fusion
+        out = self.fusion(out)
+        out = self.fusion_bn(out)
+        out = F.relu(out)
+        
+        # Global average pooling
+        out = self.global_avg_pool(out)
+        out = out.view(out.size(0), -1)
+        
+        # Fully connected layers
+        out = F.relu(self.fc1(out))
+        out = self.dropout(out)
+        out = F.relu(self.fc2(out))
+        out = self.fc3(out)
+        
+        return out.squeeze(1)
+
+
+def get_model(
+    architecture: str,
+    input_channels: int = 5,
+    base_filters: int = 32,
+    channel_growth_rate: float = 1.5,
+    num_residual_blocks: int = 4,
+    dropout_rate: float = 0.3
+) -> nn.Module:
+    """
+    Get a model based on the specified architecture.
+    
+    Args:
+        architecture: Model architecture name
+        input_channels: Number of input channels
+        base_filters: Base number of filters
+        channel_growth_rate: Channel growth rate
+        num_residual_blocks: Number of residual blocks
+        dropout_rate: Dropout rate
+        
+    Returns:
+        PyTorch model
+    """
+    if architecture == "voxelflex_cnn":
+        return VoxelFlexCNN(
+            input_channels=input_channels,
+            base_filters=base_filters,
+            channel_growth_rate=channel_growth_rate,
+            dropout_rate=dropout_rate
+        )
+    elif architecture == "dilated_resnet3d":
+        return DilatedResNet3D(
+            input_channels=input_channels,
+            base_filters=base_filters,
+            channel_growth_rate=channel_growth_rate,
+            num_residual_blocks=num_residual_blocks,
+            dropout_rate=dropout_rate
+        )
+    elif architecture == "multipath_rmsf_net":
+        return MultipathRMSFNet(
+            input_channels=input_channels,
+            base_filters=base_filters,
+            channel_growth_rate=channel_growth_rate,
+            num_residual_blocks=num_residual_blocks,
+            dropout_rate=dropout_rate
+        )
+    else:
+        raise ValueError(f"Unknown architecture: {architecture}")
+===== FILE: src/voxelflex/models/__init__.py =====
+# In src/voxelflex/models/__init__.py
+from voxelflex.models.cnn_models import get_model, VoxelFlexCNN, DilatedResNet3D, MultipathRMSFNet
+===== FILE: src/voxelflex/utils/logging_utils.py =====
+"""
+Logging utilities for Voxelflex.
+
+This module provides custom logging functionality, including a fixed-bottom progress bar.
+"""
+
+import os
+import sys
+import time
+import logging
+from typing import Optional, Dict, Any
+import shutil
+
+# ANSI escape codes for colors
+COLOR_RESET = "\033[0m"
+COLOR_RED = "\033[31m"
+COLOR_GREEN = "\033[32m"
+COLOR_YELLOW = "\033[33m"
+COLOR_BLUE = "\033[34m"
+COLOR_MAGENTA = "\033[35m"
+COLOR_CYAN = "\033[36m"
+
+# ASCII art for logger
+ASCII_HEADER = r"""
+ __      __                  _  __ _           
+ \ \    / /                 | |/ _| |          
+  \ \  / /__  __  _____  ___| | |_| | _____  __
+   \ \/ / _ \\ \/ / _ \/ __| |  _| |/ _ \ \/ /
+    \  / (_) |>  <  __/ (__| | | | |  __/>  < 
+     \/ \___//_/\_\___|\___|_|_| |_|\___/_/\_\                                     
+"""
+
+def setup_logging(log_file: Optional[str] = None, console_level: str = "INFO", 
+                  file_level: str = "DEBUG") -> None:
+    """
+    Set up logging for Voxelflex.
+    
+    Args:
+        log_file: Path to log file (if None, logging to file is disabled)
+        console_level: Logging level for console output
+        file_level: Logging level for file output
+    """
+    # Convert string levels to logging levels
+    console_level = getattr(logging, console_level.upper())
+    file_level = getattr(logging, file_level.upper())
+    
+    # Create root logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)  # Set to lowest level to capture everything
+    
+    # Remove existing handlers
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+    
+    # Create formatter with timestamp
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)8s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    
+    # Create console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(console_level)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    
+    # Create file handler if log_file is provided
+    if log_file:
+        # Create directory if it doesn't exist
+        log_dir = os.path.dirname(log_file)
+        if log_dir:
+            os.makedirs(log_dir, exist_ok=True)
+        
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(file_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    
+    # Log ASCII art header
+    logger.info(f"\n{ASCII_HEADER}")
+    logger.info("Voxelflex logger initialized")
+
+
+def get_logger(name: str) -> logging.Logger:
+    """
+    Get a logger with the specified name.
+    
+    Args:
+        name: Logger name
+        
+    Returns:
+        Logger instance
+    """
+    return logging.getLogger(name)
+
+
+class ProgressBar:
+    """
+    Fixed-bottom progress bar that can be updated from anywhere in the code.
+    """
+    
+    def __init__(self, total: int, prefix: str = "", suffix: str = "", 
+                 bar_length: int = 30):
+        """
+        Initialize progress bar.
+        
+        Args:
+            total: Total number of items
+            prefix: Prefix string
+            suffix: Suffix string
+            bar_length: Length of the progress bar
+        """
+        self.total = total
+        self.prefix = prefix
+        self.suffix = suffix
+        self.bar_length = bar_length
+        self.current = 0
+        self.start_time = time.time()
+        self.last_printed_length = 0
+        
+        # Get terminal width
+        self.terminal_width = shutil.get_terminal_size().columns
+    
+    def update(self, current: int) -> None:
+        """
+        Update progress bar.
+        
+        Args:
+            current: Current progress value
+        """
+        self.current = current
+        self._print_progress()
+    
+    def _print_progress(self) -> None:
+        """Print the progress bar."""
+        # Calculate progress
+        percent = float(self.current) / float(self.total) * 100
+        filled_length = int(round(self.bar_length * self.current / float(self.total)))
+        bar = "█" * filled_length + "-" * (self.bar_length - filled_length)
+        
+        # Calculate elapsed time and ETA
+        elapsed_time = time.time() - self.start_time
+        items_per_second = self.current / elapsed_time if elapsed_time > 0 else 0
+        eta = (self.total - self.current) / items_per_second if items_per_second > 0 else 0
+        
+        # Format time strings
+        elapsed_str = self._format_time(elapsed_time)
+        eta_str = self._format_time(eta)
+        
+        # Build progress string
+        progress_str = f"\r{self.prefix} [{bar}] {percent:.1f}% {self.current}/{self.total} "
+        progress_str += f"[{elapsed_str}<{eta_str}, {items_per_second:.1f} it/s] {self.suffix}"
+        
+        # Ensure the string fits the terminal width
+        if len(progress_str) > self.terminal_width:
+            progress_str = progress_str[:self.terminal_width - 3] + "..."
+        
+        # Clear previous output by printing spaces
+        clear_str = " " * self.last_printed_length
+        sys.stdout.write("\r" + clear_str)
+        
+        # Print progress
+        sys.stdout.write(progress_str)
+        sys.stdout.flush()
+        
+        self.last_printed_length = len(progress_str)
+    
+    def _format_time(self, seconds: float) -> str:
+        """
+        Format time in seconds to a readable string.
+        
+        Args:
+            seconds: Time in seconds
+            
+        Returns:
+            Formatted time string
+        """
+        if seconds < 60:
+            return f"{seconds:.1f}s"
+        elif seconds < 3600:
+            minutes = int(seconds / 60)
+            seconds = seconds % 60
+            return f"{minutes}m {seconds:.1f}s"
+        else:
+            hours = int(seconds / 3600)
+            seconds = seconds % 3600
+            minutes = int(seconds / 60)
+            seconds = seconds % 60
+            return f"{hours}h {minutes}m {seconds:.1f}s"
+    
+    def finish(self) -> None:
+        """Complete the progress bar and move to the next line."""
+        self.update(self.total)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+===== FILE: src/voxelflex/utils/file_utils.py =====
+"""
+File utility functions for Voxelflex.
+
+This module provides utility functions for file and directory operations.
+"""
+
+import os
+import json
+from pathlib import Path
+from typing import Dict, Any, Union, Optional
+
+def ensure_dir(directory: str) -> None:
+    """
+    Ensure that a directory exists, creating it if necessary.
+    
+    Args:
+        directory: Directory path
+    """
+    os.makedirs(directory, exist_ok=True)
+
+
+def resolve_path(path: str) -> str:
+    """
+    Resolve a file path, expanding user directory and making it absolute.
+    
+    Args:
+        path: File path
+        
+    Returns:
+        Resolved path
+    """
+    expanded_path = os.path.expanduser(path)
+    return os.path.abspath(expanded_path)
+
+
+def save_json(data: Dict[str, Any], file_path: str, indent: int = 4) -> None:
+    """
+    Save data to a JSON file.
+    
+    Args:
+        data: Data to save
+        file_path: Path to save the file
+        indent: JSON indentation level
+    """
+    # Ensure the directory exists
+    directory = os.path.dirname(file_path)
+    ensure_dir(directory)
+    
+    # Save the JSON file
+    with open(file_path, 'w') as f:
+        # Handle numpy arrays and other non-serializable objects
+        json.dump(data, f, indent=indent, default=lambda x: x.tolist() if hasattr(x, 'tolist') else str(x))
+
+
+def load_json(file_path: str) -> Dict[str, Any]:
+    """
+    Load data from a JSON file.
+    
+    Args:
+        file_path: Path to the JSON file
+        
+    Returns:
+        Loaded data
+    """
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+
+def get_file_extension(file_path: str) -> str:
+    """
+    Get the file extension from a file path.
+    
+    Args:
+        file_path: Path to the file
+        
+    Returns:
+        File extension (lowercase, without the dot)
+    """
+    return os.path.splitext(file_path)[1].lower()[1:]
+===== FILE: src/voxelflex/utils/system_utils.py =====
+"""
+System utility functions for Voxelflex.
+
+This module provides functions for detecting and utilizing system resources.
+"""
+
+import os
+import platform
+import multiprocessing
+from typing import Dict, Any, Tuple
+
+import torch
+
+from voxelflex.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
+
+def get_device(adjust_for_gpu: bool = True) -> torch.device:
+    """
+    Get appropriate device (CPU or GPU) for PyTorch.
+    
+    Args:
+        adjust_for_gpu: Whether to use GPU if available
+        
+    Returns:
+        PyTorch device
+    """
+    if adjust_for_gpu and torch.cuda.is_available():
+        device = torch.device("cuda")
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.deterministic = False
+        logger.info(f"Using GPU: {torch.cuda.get_device_name(0)}")
+    else:
+        device = torch.device("cpu")
+        logger.info("Using CPU")
+    
+    return device
+
+
+def check_system_resources(detect_cores: bool = True, 
+                           adjust_for_gpu: bool = True) -> Dict[str, Any]:
+    """
+    Check available system resources.
+    
+    Args:
+        detect_cores: Whether to detect available CPU cores
+        adjust_for_gpu: Whether to check for GPU availability
+        
+    Returns:
+        Dictionary containing system resource information
+    """
+    system_info = {
+        "platform": platform.platform(),
+        "python_version": platform.python_version(),
+        "torch_version": torch.__version__,
+    }
+    
+    # Check CPU resources
+    if detect_cores:
+        cpu_count = multiprocessing.cpu_count()
+        system_info["cpu_count"] = cpu_count
+        system_info["recommended_workers"] = max(1, cpu_count // 2)
+    
+    # Check GPU resources
+    if adjust_for_gpu:
+        system_info["cuda_available"] = torch.cuda.is_available()
+        if torch.cuda.is_available():
+            system_info["cuda_device_count"] = torch.cuda.device_count()
+            system_info["cuda_device_name"] = torch.cuda.get_device_name(0)
+            system_info["cuda_version"] = torch.version.cuda
+    
+    # Log system information
+    logger.info(f"Platform: {system_info['platform']}")
+    logger.info(f"Python version: {system_info['python_version']}")
+    logger.info(f"PyTorch version: {system_info['torch_version']}")
+    
+    if detect_cores:
+        logger.info(f"CPU cores: {system_info['cpu_count']}")
+        logger.info(f"Recommended worker processes: {system_info['recommended_workers']}")
+    
+    if adjust_for_gpu and system_info.get("cuda_available", False):
+        logger.info(f"CUDA available: {system_info['cuda_available']}")
+        logger.info(f"CUDA device count: {system_info['cuda_device_count']}")
+        logger.info(f"CUDA device name: {system_info['cuda_device_name']}")
+        logger.info(f"CUDA version: {system_info['cuda_version']}")
+    
+    return system_info
+
+
+def set_num_threads(num_threads: int = None) -> int:
+    """
+    Set number of threads for PyTorch.
+    
+    Args:
+        num_threads: Number of threads to use (if None, use all available cores)
+        
+    Returns:
+        Number of threads set
+    """
+    if num_threads is None:
+        num_threads = multiprocessing.cpu_count()
+    
+    torch.set_num_threads(num_threads)
+    logger.info(f"Set PyTorch number of threads to {num_threads}")
+    
+    return num_threads
+
+=======================================
+Extracting First 10 Lines from Files in outputs/logs
+=======================================
+
+Current Logs Directory: /home/s_felix/voxelflex/outputs/logs
+
+Folder Structure in Logs:
+.
+└── voxelflex.log
+
+0 directories, 1 file
+
+Extracting First 10 Lines from Each Text File in Logs (if any):
+-------------------------------------------------------------------------------------
+===== FILE: ./voxelflex.log =====
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: Platform: Linux-6.5.0-35-generic-x86_64-with-glibc2.35
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: Python version: 3.9.18
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: PyTorch version: 2.5.1
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: CPU cores: 16
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: Recommended worker processes: 8
+2025-03-17 11:38:31 [    INFO] voxelflex.cli.cli: System resources: {'platform': 'Linux-6.5.0-35-generic-x86_64-with-glibc2.35', 'python_version': '3.9.18', 'torch_version': '2.5.1', 'cpu_count': 16, 'recommended_workers': 8, 'cuda_available': False}
+2025-03-17 11:38:31 [    INFO] voxelflex.cli.cli: Starting model training
+2025-03-17 11:38:31 [    INFO] voxelflex.utils.system_utils: Using CPU
+2025-03-17 11:38:31 [    INFO] voxelflex.cli.commands.train: Using device: cpu
+2025-03-17 11:38:31 [    INFO] voxelflex.data.data_loader: Loading voxel data from /home/s_felix/data_full/voxel_data.hdf5
+
