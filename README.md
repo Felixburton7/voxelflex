@@ -324,7 +324,7 @@ If you use VoxelFlex in your research, please cite:
   author = {Felix, S.},
   title = {VoxelFlex: A Machine Learning Package for Predicting Protein RMSF from Voxelized Data},
   year = {2025},
-  url = {https://github.com/username/voxelflex}
+  url = {https://github.com/Felixburton7/voxelflex}
 }
 ```
 
