@@ -1,3 +1,4 @@
+
 """
 Data validation module for Voxelflex.
 
@@ -192,11 +193,39 @@ def validate_domain_residue_mapping(
     logger.info(f"Voxel domains: {num_voxel_domains}, RMSF domains: {num_rmsf_domains}, "
                 f"Mapped domains: {num_mapped_domains}")
     
+    # Analyze domain patterns
+    voxel_domain_patterns = set()
+    for domain in list(voxel_data.keys())[:min(100, len(voxel_data))]:
+        if '_' in domain:
+            pattern = domain.split('_', 1)[1]  # Everything after first '_'
+            voxel_domain_patterns.add(pattern)
+    
+    rmsf_domain_patterns = set()
+    for domain in rmsf_data['domain_id'].unique()[:min(100, len(rmsf_data['domain_id'].unique()))]:
+        if '_' in domain:
+            pattern = domain.split('_', 1)[1]  # Everything after first '_'
+            rmsf_domain_patterns.add(pattern)
+    
+    logger.info(f"Voxel domain patterns: {voxel_domain_patterns}")
+    logger.info(f"RMSF domain patterns: {rmsf_domain_patterns}")
+    
     # Check mapping coverage
     unmapped_domains = [d for d in voxel_data.keys() if d not in domain_mapping]
     if unmapped_domains:
         logger.warning(f"{len(unmapped_domains)}/{num_voxel_domains} voxel domains could not be mapped to RMSF domains")
         logger.debug(f"Unmapped domains: {unmapped_domains[:5]}{'...' if len(unmapped_domains) > 5 else ''}")
+        
+        # Check if unmapped domains could be due to suffix issues
+        suffix_issues = 0
+        for domain in unmapped_domains[:min(50, len(unmapped_domains))]:
+            base_name = domain.split('_')[0]
+            for rmsf_domain in rmsf_data['domain_id'].unique():
+                if rmsf_domain == base_name or rmsf_domain.startswith(base_name):
+                    suffix_issues += 1
+                    break
+        
+        if suffix_issues > 0:
+            logger.warning(f"At least {suffix_issues} unmapped domains may be due to suffix differences between datasets")
     
     # Check residue mapping
     total_voxel_residues = sum(len(domain_data) for domain_data in voxel_data.values())
@@ -208,7 +237,16 @@ def validate_domain_residue_mapping(
         zip(rmsf_data['domain_id'], rmsf_data['resid'])
     )
     
+    # Also create a set with base domain names for more flexible mapping
+    rmsf_base_domain_resid_set = set()
+    for domain, resid in zip(rmsf_data['domain_id'], rmsf_data['resid']):
+        base_domain = domain.split('_')[0] if '_' in domain else domain
+        rmsf_base_domain_resid_set.add((base_domain, resid))
+    
     # Check each voxel residue
+    residue_mapping_issues = 0
+    sample_issues = []
+    
     for voxel_domain, domain_data in voxel_data.items():
         if voxel_domain not in domain_mapping:
             continue
@@ -220,11 +258,25 @@ def validate_domain_residue_mapping(
                 resid_int = int(resid)
                 if (rmsf_domain, resid_int) in rmsf_domain_resid_set:
                     mapped_residues += 1
+                else:
+                    # Try base domain name as fallback
+                    base_domain = voxel_domain.split('_')[0] if '_' in voxel_domain else voxel_domain
+                    if (base_domain, resid_int) in rmsf_base_domain_resid_set:
+                        mapped_residues += 1
+                    else:
+                        residue_mapping_issues += 1
+                        if len(sample_issues) < 5:
+                            sample_issues.append((voxel_domain, resid_int, rmsf_domain))
             except ValueError:
                 logger.debug(f"Could not convert residue ID to integer: {resid}")
     
     logger.info(f"Successfully mapped {mapped_residues}/{total_voxel_residues} voxel residues to RMSF data "
                 f"({mapped_residues/total_voxel_residues*100:.1f}%)")
+    
+    if residue_mapping_issues > 0:
+        logger.warning(f"Found {residue_mapping_issues} residues that couldn't be mapped from voxel to RMSF data")
+        if sample_issues:
+            logger.debug(f"Sample mapping issues: {sample_issues}")
     
     if mapped_residues == 0:
         raise ValueError("No residues could be mapped between voxel and RMSF data")

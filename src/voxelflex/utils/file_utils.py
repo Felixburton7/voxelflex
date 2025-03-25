@@ -7,7 +7,7 @@ This module provides utility functions for file and directory operations.
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, Union, Optional
+from typing import Dict, Any, Union, Optional, List
 
 def ensure_dir(directory: str) -> None:
     """
@@ -158,3 +158,32 @@ def inspect_hdf5_structure(file_path: str, domain_sample: int = 2, print_residue
     print("\nFile inspection complete.")
     print("=" * 80)
 
+
+
+def save_domain_registry(domains: List[str], file_path: str) -> None:
+    """
+    Save a list of processed domain IDs to a file.
+    
+    Args:
+        domains: List of domain IDs that were processed
+        file_path: Path to save the registry file
+    """
+    with open(file_path, 'w') as f:
+        for domain in domains:
+            f.write(f"{domain}\n")
+
+def load_domain_registry(file_path: str) -> List[str]:
+    """
+    Load a list of processed domain IDs from a file.
+    
+    Args:
+        file_path: Path to the registry file
+        
+    Returns:
+        List of domain IDs
+    """
+    if not os.path.exists(file_path):
+        return []
+        
+    with open(file_path, 'r') as f:
+        return [line.strip() for line in f if line.strip()]

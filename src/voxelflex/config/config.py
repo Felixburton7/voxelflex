@@ -77,6 +77,13 @@ def validate_config(config: Dict[str, Any]) -> None:
         raise ValueError(f"Invalid model architecture: {config['model']['architecture']}. "
                          f"Must be one of: {valid_architectures}")
     
+    #Validate system memory and utilization
+    if 'system_utilization' in config:
+        if 'memory_ceiling_percent' in config['system_utilization']:
+            memory_ceiling = config['system_utilization']['memory_ceiling_percent']
+            if not isinstance(memory_ceiling, (int, float)) or memory_ceiling <= 0 or memory_ceiling > 100:
+                raise ValueError(f"Invalid memory_ceiling_percent: {memory_ceiling}. Must be between 0 and 100.")
+            
     # Validate training section
     if 'batch_size' not in config['training']:
         raise ValueError("Missing required training parameter: batch_size")

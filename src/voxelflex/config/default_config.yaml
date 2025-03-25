@@ -1,39 +1,64 @@
-# Default configuration for Voxelflex
-# Default configuration for Voxelflex
+# Default configuration for Voxelflex - Medium Settings
 input:
-  data_dir: /home/s_felix/drFelix/data_full                     # Base directory for all data files
-  voxel_file: /home/s_felix/drFelix/data_full/processed/voxelized_output/mdcath_dataset_half_CNOCACB.hdf5   # Full path to the voxel data
-  rmsf_dir: /home/s_felix/drFelix/data_full/processed/RMSF/replicas  # Full path to RMSF data directory
+  data_dir: /home/s_felix/voxelflex_inputs                    # Base directory for all data files
+  voxel_file: /home/s_felix/voxelflex_inputs/voxelized_output/voxel_320.hdf5 # Full path to the voxel data
+  rmsf_dir: /home/s_felix/voxelflex_inputs/replicas  # Full path to RMSF data directory
   temperature: 320                          # Temperature identifier: 320, 348, 379, 413, 450, or "average"
-  domain_ids: [1a02F00]                            # List of domain IDs to process
-  use_metadata: true                        # Flag to include metadata in processing                     # Flag to include metadata in processing
+  domain_ids: []                            # List of domain IDs to process
+  use_metadata: true                        # Flag to include metadata in processing
+  max_domains: null                          # Limit to 500 domains for faster training can set to null
 
 output:
   base_dir: outputs/                        # Base output directory
   log_file: voxelflex.log                   # Filename for logging output
 
 model:
-  architecture: voxelflex_cnn            # Choose from: voxelflex_cnn, dilated_resnet3d, multipath_rmsf_net
+  architecture: multipath_rmsf_net          # Choose from: voxelflex_cnn, dilated_resnet3d, multipath_rmsf_net
   input_channels: 5                         # Number of channels: 5 (C, N, O, CA, CB) or 4 if CA/CB are missing
   channel_growth_rate: 1.5                  # Growth rate for channels in the model
-  num_residual_blocks: 4                    # Number of residual blocks in the CNN
-  dropout_rate: 0.3                         # Dropout rate for regularization
+  num_residual_blocks: 3                    # Reduced from 4 to 3 for medium settings
+  dropout_rate: 0.3                         # Reduced dropout for better convergence
   base_filters: 32                          # Base number of filters for convolutional layers
 
 training:
-  batch_size: 32                            # Training batch size
-  num_epochs: 5                           # Number of training epochs
-  learning_rate: 0.001                      # Learning rate for optimizer
-  weight_decay: 1e-5                        # Weight decay for regularization
+  batch_size: 256                           # Reduced from 512 to 256 for medium settings
+  num_epochs: 20                            # Reduced from 50 to 20 for medium settings
+  learning_rate: 0.0005                     # Learning rate for optimizer
+  weight_decay: 1e-4                        # Weight decay for regularization
   train_split: 0.7                          # Proportion of data for training
   val_split: 0.15                           # Proportion of data for validation
   test_split: 0.15                          # Proportion of data for testing
   seed: 42                                  # Random seed for reproducibility
+  safe_mode: false                          # Enable safe mode for dataset handling (single-threaded)
+  memory_efficient: true                    # Use memory-efficient dataset mode
+  resume_checkpoint: null                   # Path to checkpoint to resume training from (null = start fresh)
+  gradient_clipping:
+    enabled: true
+    max_norm: 1.0
+  warmup:
+    enabled: true
+    epochs: 1
+  domain_streaming:
+    enabled: true                           # Enable domain streaming
+    initial_domains_per_batch: 100          # Reduced from 200 to 100 for medium settings
+    memory_reserve_percent: 25.0            # Increased to 25% to keep more memory free
+    dynamic_batch_sizing: true              # Adjust batch size based on memory
+  # Mixed precision settings
+  mixed_precision:
+    enabled: true                           # Enable mixed precision training
+    dtype: "bfloat16"                       # Options: "float16", "bfloat16"
   scheduler:                                # Learning rate scheduler configuration
-    type: reduce_on_plateau                 # Scheduler type: reduce_on_plateau or step
-    patience: 10                            # Patience for ReduceLROnPlateau
+    type: cosine_annealing                  # Scheduler type: reduce_on_plateau, step, or cosine_annealing
+    patience: 5                             # Reduced from 10 to 5 for medium settings
     factor: 0.1                             # Factor for scheduler
-    mode: min                               # Mode for ReduceLROnPlateau: min or max
+    mode: min
+    T_max: 5                                # Reduced from 10 to 5 for medium settings
+    eta_min: 1e-6
+
+prediction:
+  domains_per_batch: 150                     # Reduced from 100 to 75 for medium settings
+  batch_size: 256                            # Batch size for prediction
+  use_training_domains: true                # Use domains from training
 
 logging:
   level: INFO                               # Overall logging level
@@ -53,6 +78,13 @@ visualization:
   max_scatter_points: 1000                  # Maximum scatter points in plots
 
 system_utilization:
-  detect_cores: true                        # Enable detection of CPU cores for multiprocessing
-  adjust_for_gpu: true                      # Adjust processing based on GPU availability
-  num_workers: 10                            # Number of worker processes for DataLoaders
+  detect_cores: true                        # Detect available CPU cores
+  adjust_for_gpu: true                      # Adjust resources based on GPU availability
+  num_workers: 16                           # Reduced from 24 to 16 for medium settings
+  memory_ceiling_percent: 80.0              # Reduced from 80.0 to 75.0 for medium settings
+  out_of_core_mode: true                    # Use out-of-core processing for large domains
+  memory_thresholds:
+    warning: 70.0                           # Reduced from 75.0 to 70.0 for earlier warnings
+    critical: 80.0                          # Reduced from 85.0 to 80.0 for more headroom
+    emergency: 90.0                         # Emergency threshold (percent)
+  gpu_memory_fraction: 0.85                 # Reduced from 0.95 to 0.85 to leave more GPU memory free
