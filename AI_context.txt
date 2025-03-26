@@ -6,18 +6,6 @@ Full File Structure of Project:
 ├── AI_context.txt
 ├── dump_snapshot.pickle
 ├── main.py
-├── outputs
-│   ├── checkpoints
-│   │   ├── checkpoint_epoch_3.pt
-│   │   └── checkpoint_epoch_6.pt
-│   ├── domain_registry.json
-│   ├── full_domain_registry.txt
-│   ├── logs
-│   │   └── voxelflex.log
-│   ├── metrics
-│   ├── models
-│   │   └── best_model_streaming.pt
-│   └── visualizations
 ├── README.md
 ├── requirements.txt
 ├── setup.py
@@ -84,7 +72,7 @@ Full File Structure of Project:
         ├── SOURCES.txt
         └── top_level.txt
 
-22 directories, 59 files
+16 directories, 53 files
 
 ---------------------------------------------------------
 Contents of Relevant Files (Ignoring Binary Files):
@@ -148,8 +136,8 @@ training:
     eta_min: 1e-6
 
 prediction:
-  domains_per_batch: 75                     # Reduced from 100 to 75 for medium settings
-  batch_size: 64                            # Batch size for prediction
+  domains_per_batch: 150                     # Reduced from 100 to 75 for medium settings
+  batch_size: 256                            # Batch size for prediction
   use_training_domains: true                # Use domains from training
 
 logging:
@@ -173,7 +161,7 @@ system_utilization:
   detect_cores: true                        # Detect available CPU cores
   adjust_for_gpu: true                      # Adjust resources based on GPU availability
   num_workers: 16                           # Reduced from 24 to 16 for medium settings
-  memory_ceiling_percent: 75.0              # Reduced from 80.0 to 75.0 for medium settings
+  memory_ceiling_percent: 80.0              # Reduced from 80.0 to 75.0 for medium settings
   out_of_core_mode: true                    # Use out-of-core processing for large domains
   memory_thresholds:
     warning: 70.0                           # Reduced from 75.0 to 70.0 for earlier warnings
@@ -2461,7 +2449,7 @@ def predict_rmsf(
                 logger.info(f"Using batch size: {predicted_batch_size}")
             
             # (e) MEMORY OPTIMIZATION: Use minimal workers
-            num_workers = 0  # CHANGE: Always use 0 workers to minimize memory pressure
+            num_workers = config['system_utilization']['num_workers']
             
             logger.info(f"DataLoader batch_size={predicted_batch_size}, num_workers={num_workers}")
             
@@ -7850,26 +7838,4 @@ def load_domain_registry(file_path: str) -> List[str]:
 =======================================
 Extracting First 10 Lines from Files in outputs/logs
 =======================================
-
-Current Logs Directory: /home/s_felix/voxelflex/outputs/logs
-
-Folder Structure in Logs:
-.
-└── voxelflex.log
-
-0 directories, 1 file
-
-Extracting First 10 Lines from Each Text File in Logs (if any):
--------------------------------------------------------------------------------------
-===== FILE: ./voxelflex.log =====
-2025-03-25 14:30:15 [    INFO] root: 
-
- __      __                  _  __ _           
- \ \    / /                 | |/ _| |          
-  \ \  / /__  __  _____  ___| | |_| | _____  __
-   \ \/ / _ \\ \/ / _ \/ __| |  _| |/ _ \ \/ /
-    \  / (_) |>  <  __/ (__| | | | |  __/>  < 
-     \/ \___//_/\_\___|\___|_|_| |_|\___/_/\_\                                     
-
-2025-03-25 14:30:15 [    INFO] root: [32mVoxelflex logger initialized[0m
 
