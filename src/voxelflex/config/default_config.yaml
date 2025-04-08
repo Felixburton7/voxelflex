@@ -1,9 +1,9 @@
 # Default configuration for Voxelflex - Medium Settings
 input:
   data_dir: /home/s_felix/voxelflex_inputs                    # Base directory for all data files
-  voxel_file: /home/s_felix/voxelflex_inputs/voxelized_output/voxel_320.hdf5 # Full path to the voxel data
-  rmsf_dir: /home/s_felix/voxelflex_inputs/replicas  # Full path to RMSF data directory
-  temperature: 320                          # Temperature identifier: 320, 348, 379, 413, 450, or "average"
+  voxel_file: /home/s_felix/mdcath-processor-output/voxelized/mdcath_voxelized.hdf5 # Full path to the voxel data
+  rmsf_dir: /home/s_felix/mdcath-processor-output/RMSF/replica_average/  # Full path to RMSF data directory
+  temperature: 348                          # Temperature identifier: 320, 348, 379, 413, 450, or "average"
   domain_ids: []                            # List of domain IDs to process
   use_metadata: true                        # Flag to include metadata in processing
   max_domains: null                          # Limit to 500 domains for faster training can set to null
@@ -22,7 +22,7 @@ model:
 
 training:
   batch_size: 256                           # Reduced from 512 to 256 for medium settings
-  num_epochs: 20                            # Reduced from 50 to 20 for medium settings
+  num_epochs: 10                            # Reduced from 50 to 20 for medium settings
   learning_rate: 0.0005                     # Learning rate for optimizer
   weight_decay: 1e-4                        # Weight decay for regularization
   train_split: 0.7                          # Proportion of data for training
@@ -40,7 +40,7 @@ training:
     epochs: 1
   domain_streaming:
     enabled: true                           # Enable domain streaming
-    initial_domains_per_batch: 100          # Reduced from 200 to 100 for medium settings
+    initial_domains_per_batch: 150          # Reduced from 200 to 100 for medium settings
     memory_reserve_percent: 25.0            # Increased to 25% to keep more memory free
     dynamic_batch_sizing: true              # Adjust batch size based on memory
   # Mixed precision settings
@@ -58,7 +58,7 @@ training:
 prediction:
   domains_per_batch: 150                     # Reduced from 100 to 75 for medium settings
   batch_size: 256                            # Batch size for prediction
-  use_training_domains: true                # Use domains from training
+  use_training_domains: false                # Use domains from training
 
 logging:
   level: INFO                               # Overall logging level
@@ -80,7 +80,7 @@ visualization:
 system_utilization:
   detect_cores: true                        # Detect available CPU cores
   adjust_for_gpu: true                      # Adjust resources based on GPU availability
-  num_workers: 16                           # Reduced from 24 to 16 for medium settings
+  num_workers: 8                           # Reduced from 4 to 16 for medium settings
   memory_ceiling_percent: 80.0              # Reduced from 80.0 to 75.0 for medium settings
   out_of_core_mode: true                    # Use out-of-core processing for large domains
   memory_thresholds:
